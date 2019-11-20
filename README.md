@@ -17,15 +17,19 @@ This action loads and executes a private Action.  This allows private actions to
 **Optional** The branch of the repository to pull down. Defaults to `master`
 
 ## Example usage w/ additional parameters
+``` yaml
     - uses: invisionapp/private-action-loader@v1
       with:
         repo-token: ${{ secrets.REPO_TOKEN }}
         repo-name: some-org/super-secret-action
         # the following input gets passed to the private action
         input-used-by-other-action: this is used by super-secret-action
+```
 
 ## Example usage w/o additional parameters
+``` yaml
     - uses: invisionapp/private-action-loader@v1
       with:
         repo-token: ${{ secrets.REPO_TOKEN }}
         repo-name: some-org/super-secret-action
+```
