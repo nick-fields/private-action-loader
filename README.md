@@ -33,3 +33,9 @@ This action loads and executes a private Action.  This allows private actions to
         repo-token: ${{ secrets.REPO_TOKEN }}
         repo-name: some-org/super-secret-action
 ```
+
+## Limitations
+* Only supports javascript actions
+* Can only be used once per job (but in unlimited jobs per workflow)
+* There are no tests yet
+* There is no error handling yet
