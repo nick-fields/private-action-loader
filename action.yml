@@ -1,0 +1,15 @@
+name: Private Action Loader
+description: 'Allows a private action to be easily reused across repos'
+inputs:
+  repo-token:
+    description: 'Access token with read access to the repo containing action'
+    required: true
+  repo-name:
+    description: 'The organization/user and repo where action is stored'
+    required: true
+  repo-branch:
+    description: 'The branch to pull private action from. Defaults to master'
+    required: false
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
