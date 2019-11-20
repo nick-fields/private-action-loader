@@ -19,7 +19,7 @@ async function run() {
     '--single-branch', 
     '--no-tags', 
     '--depth 1', 
-    `-b ${GITHUB_BRANCH || DEFAULT_BRANCH}`, 
+    `--branch ${GITHUB_BRANCH || DEFAULT_BRANCH}`,
     repo,  
     WORKING_DIR
   ].join(' ')
@@ -30,7 +30,7 @@ async function run() {
 
   if (GITHUB_SHA) {
     core.info(`Checking out SHA ${GITHUB_SHA}`)
-    await exec.exec(`git checkout ${GITHUB_SHA}`);
+    await exec.exec(`git checkout ${GITHUB_SHA}`, null, {cwd: WORKING_DIR});
   }
 
   core.info('Reading action.yml');
