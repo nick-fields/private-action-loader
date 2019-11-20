@@ -3,6 +3,7 @@ const core = require('@actions/core');
 const {parse} = require('yaml');
 const {readFileSync} = require('fs');
 const {join} = require('path');
+const rimraf = require('rimraf');
 
 const GITHUB_TOKEN = core.getInput('repo-token', {required: true});
 const GITHUB_REPO = core.getInput('repo-name', {required: true});
@@ -46,6 +47,11 @@ async function run() {
   core.startGroup(`${action.name}`)
   await exec.exec(`node ${join(WORKING_DIR, action.runs.main)}`)
   core.endGroup(`${action.name}`)
+
+  core.startGroup('Clean up')
+  core.info('Deleting cloned directory to prevent potential sensitive data persisting')
+  await rimraf(join(WORKING_DIR));
+  core.endGroup('Clean up')
 }
 
 run().then(() => {

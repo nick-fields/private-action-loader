@@ -22,6 +22,7 @@
     "@actions/core": "^1.2.0",
     "@actions/exec": "^1.0.1",
     "@actions/github": "^1.1.0",
+    "rimraf": "^3.0.0",
     "simple-git": "^1.126.0",
     "yaml": "^1.7.2"
   },
