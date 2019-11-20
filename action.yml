@@ -10,6 +10,9 @@ inputs:
   repo-branch:
     description: 'The branch to pull private action from. Defaults to master'
     required: false
+  repo-sha:
+    description: 'The exact SHA to pull private action from.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

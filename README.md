@@ -16,6 +16,10 @@ This action loads and executes a private Action.  This allows private actions to
 
 **Optional** The branch of the repository to pull down. Defaults to `master`
 
+### `repo-sha`
+
+**Optional** The SHA (short or long) of the commit to pull down
+
 ## Example usage w/ additional parameters
 ``` yaml
     - uses: invisionapp/private-action-loader@v1
@@ -32,6 +36,15 @@ This action loads and executes a private Action.  This allows private actions to
       with:
         repo-token: ${{ secrets.REPO_TOKEN }}
         repo-name: some-org/super-secret-action
+```
+
+## Example usage w/ exact SHA
+``` yaml
+    - uses: invisionapp/private-action-loader@v1
+      with:
+        repo-token: ${{ secrets.REPO_TOKEN }}
+        repo-name: some-org/super-secret-action
+        repo-sha: b8a83a0
 ```
 
 ## Limitations
