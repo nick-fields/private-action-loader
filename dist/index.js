@@ -1364,7 +1364,7 @@ async function run() {
     'git clone', 
     '--single-branch', 
     '--no-tags', 
-    '--depth 1', 
+    GITHUB_SHA ? '' : '--depth 1', // to checkout by sha, need full depth of git tree
     `--branch ${GITHUB_BRANCH || DEFAULT_BRANCH}`,
     repo,  
     WORKING_DIR
