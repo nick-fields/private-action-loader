@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "ncc build src/index.js",
     "lint": "npm run lint:js && npm run lint:yaml",
-    "lint:js": "eslint --config configs/.eslintrc.js src/**",
-    "lint:yaml": "yamllint *.yml *.yaml"
+    "lint:js": "eslint --config configs/.eslintrc.js src/** --fix",
+    "lint:yaml": "yamllint *.yml *.yaml --fix"
   },
   "repository": {
     "type": "git",
