@@ -3,17 +3,15 @@ const core = require('@actions/core')
 const { parse } = require('yaml')
 const { readFileSync } = require('fs')
 const { join } = require('path')
-const rimraf = require('rimraf')
 
 const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
 const GITHUB_REPO = core.getInput('repo-name', { required: true })
-
 const WORKING_DIR = './.private-action'
 
 async function run () {
   const { repo, sha } = parseRepo()
 
-  core.info('Masking secret, just in case')
+  core.info('Masking token just in case')
   core.setSecret(GITHUB_TOKEN)
 
   core.startGroup('Cloning private action')
@@ -39,21 +37,15 @@ async function run () {
   if (!(action && action.name && action.runs && action.runs.main)) {
     throw new Error('Malformed action.yml found')
   }
+
+  core.info('Remove github token from config')
+  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`)
   core.endGroup('Cloning private action')
 
   core.info(`Starting private action ${action.name}`)
   core.startGroup(`${action.name}`)
   await exec.exec(`node ${join(WORKING_DIR, action.runs.main)}`)
   core.endGroup(`${action.name}`)
-
-  core.startGroup('Cleaning up')
-  core.info('Deleting cloned directory to prevent potential sensitive data persisting')
-  await rimraf(WORKING_DIR, (err) => {
-    if (err) {
-      core.error(`An error occorred while deleting ${WORKING_DIR}: ${JSON.stringify(err, null, 2)}`)
-    }
-  })
-  core.endGroup('Cleaning up')
 }
 
 function parseRepo () {

@@ -24,7 +24,6 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/exec": "^1.0.1",
-    "rimraf": "^3.0.0",
     "yaml": "^1.7.2"
   },
   "devDependencies": {

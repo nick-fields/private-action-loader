@@ -61,6 +61,17 @@ This action loads and executes a private Action.  This allows private actions to
         repo-token: ${{ secrets.REPO_TOKEN }}
         repo-name: some-org/super-secret-action@v1
 ```
+
+## Example usage w/ Output
+``` yaml
+    - uses: invisionapp/private-action-loader@v1
+      id: output_example
+      with:
+        repo-token: ${{ secrets.REPO_TOKEN }}
+        repo-name: some-org/super-secret-action@v1
+    - name: Get the previous output
+      run: echo "The previous output was ${{ steps.output_example.outputs.<name of output> }}"
+```
 ---
 ## **Limitations**
 * Only supports javascript actions
