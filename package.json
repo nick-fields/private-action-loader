@@ -42,7 +42,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run prepare"
+      "pre-commit": "npm run prepare && git add ."
     }
   },
   "lint-staged": {

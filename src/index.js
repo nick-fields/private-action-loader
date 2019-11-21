@@ -7,9 +7,7 @@ const rimraf = require('rimraf')
 
 const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
 const GITHUB_REPO = core.getInput('repo-name', { required: true })
-const GITHUB_BRANCH = core.getInput('repo-branch', { required: false })
 
-const DEFAULT_BRANCH = 'master'
 const WORKING_DIR = './.private-action'
 
 async function run () {
@@ -22,10 +20,6 @@ async function run () {
   const repoUrl = `https://${GITHUB_TOKEN}@github.com/${repo}.git`
   const cmd = [
     'git clone',
-    '--single-branch',
-    '--no-tags',
-    sha ? '' : '--depth 1', // to checkout by sha, need full tree, otherwise this is much faster
-    `--branch ${GITHUB_BRANCH || DEFAULT_BRANCH}`,
     repoUrl,
     WORKING_DIR
   ].join(' ')
@@ -34,7 +28,7 @@ async function run () {
   await exec.exec(cmd)
 
   if (sha) {
-    core.info(`Checking out SHA ${sha}`)
+    core.info(`Checking out ${sha}`)
     await exec.exec(`git checkout ${sha}`, null, { cwd: WORKING_DIR })
   }
 
@@ -71,7 +65,7 @@ function parseRepo () {
 }
 
 run().then(() => {
-  console.log('Action was successful')
+  core.info('Action completed successfully')
 }).catch((e) => {
   core.setFailed(e.toString())
 })
