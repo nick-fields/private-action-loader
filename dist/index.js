@@ -8944,7 +8944,7 @@ async function run () {
 
   core.startGroup('Cleaning up')
   core.info('Deleting cloned directory to prevent potential sensitive data persisting')
-  await rimraf(WORKING_DIR, (err)=>{
+  await rimraf(WORKING_DIR, (err) => {
     console.log(`An error occorred while deleting ${WORKING_DIR}: ${err.message}`)
   })
   core.endGroup('Cleaning up')
