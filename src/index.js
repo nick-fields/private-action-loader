@@ -54,7 +54,7 @@ async function run () {
 
   core.startGroup('Cleaning up')
   core.info('Deleting cloned directory to prevent potential sensitive data persisting')
-  await rimraf(WORKING_DIR)
+  rimraf.sync(WORKING_DIR)
   core.endGroup('Cleaning up')
 }
 
