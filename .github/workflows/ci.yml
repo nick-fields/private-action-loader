@@ -1,0 +1,13 @@
+name: ci
+on: ['push']
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: install
+      run: npm install
+    - name: lint
+      run: npm run lint

@@ -1,11 +1,14 @@
 {
   "name": "private-action-loader",
   "version": "1.0.0",
-  "description": "Enables private GitHub Actions to be reused across multiple repositories",
+  "description": "Enables private GitHub Actions to be reused across repositories",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "ncc build index.js"
+    "prepare": "ncc build src/index.js",
+    "lint": "npm run lint:js && npm run lint:yaml",
+    "lint:js": "eslint --config configs/.eslintrc.js src/**",
+    "lint:yaml": "yamllint *.yml *.yaml"
   },
   "repository": {
     "type": "git",
@@ -21,16 +24,35 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/exec": "^1.0.1",
-    "@actions/github": "^1.1.0",
     "rimraf": "^3.0.0",
-    "simple-git": "^1.126.0",
     "yaml": "^1.7.2"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.20.5",
-    "husky": "^3.1.0"
+    "eslint": "^6.6.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "husky": "^3.1.0",
+    "lint-staged": "^9.4.3",
+    "standard": "^14.3.1",
+    "yaml-lint": "^1.2.4"
   },
   "husky": {
-    "pre-commit": "npm run prepare"
+    "hooks": {
+      "pre-commit": "npm run prepare"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "npm run lint:js --",
+      "git add"
+    ],
+    "*.yml": [
+      "npm run lint:yml --",
+      "git add"
+    ]
   }
 }

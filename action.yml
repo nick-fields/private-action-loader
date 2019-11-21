@@ -5,13 +5,10 @@ inputs:
     description: 'Access token with read access to the repo containing action'
     required: true
   repo-name:
-    description: 'The organization/user and repo where action is stored'
+    description: 'The organization/user and repo where action is stored, with support for @ref'
     required: true
   repo-branch:
     description: 'The branch to pull private action from. Defaults to master'
-    required: false
-  repo-sha:
-    description: 'The exact SHA to pull private action from.'
     required: false
 runs:
   using: 'node12'
