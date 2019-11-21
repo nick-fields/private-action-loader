@@ -5,7 +5,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Dependency Status](https://david-dm.org/InVisionApp/private-action-loader.svg)](https://david-dm.org/InVisionApp/private-action-loader)
 [![devDependency Status](https://david-dm.org/InVisionApp/private-action-loader/dev-status.svg)](https://david-dm.org/InVisionApp/private-action-loader#info=devDependencies)
-[![badge](https://img.shields.io/badge/status-awesome-brightgreen.svg)](https://shields.io/)
+[![badge](https://img.shields.io/badge/awesome-obviously-brightgreen.svg)](https://shields.io/)
 
 This action loads and executes a private Action.  This allows private actions to be reused in other private repositories.  All inputs are passed down into the private action.
 
