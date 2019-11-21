@@ -7,7 +7,6 @@ const rimraf = require('rimraf')
 
 const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
 const GITHUB_REPO = core.getInput('repo-name', { required: true })
-
 const WORKING_DIR = './.private-action'
 
 async function run () {
@@ -28,7 +27,7 @@ async function run () {
   await exec.exec(cmd)
 
   if (sha) {
-    core.info(`Checking out SHA ${sha}`)
+    core.info(`Checking out ${sha}`)
     await exec.exec(`git checkout ${sha}`, null, { cwd: WORKING_DIR })
   }
 
