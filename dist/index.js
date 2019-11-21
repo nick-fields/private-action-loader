@@ -5265,7 +5265,7 @@ async function run () {
 
   core.info(`Cloning action from https://***TOKEN***@github.com/${repo}.git${sha ? ` (SHA: ${sha})` : ''}`)
   await exec.exec(cmd)
-  
+
   core.info('Remove github token from config')
   await exec.exec(`git remote set-url origin https://github.com/${repo}.git`, null, { cwd: WORKING_DIR })
 
