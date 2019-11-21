@@ -5280,7 +5280,7 @@ async function run () {
   }
 
   core.info('Remove github token from config')
-  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`)
+  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`, null, { cwd: WORKING_DIR })
   core.endGroup('Cloning private action')
 
   core.info(`Starting private action ${action.name}`)
