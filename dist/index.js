@@ -8918,7 +8918,7 @@ async function run () {
   await exec.exec(cmd)
 
   if (sha) {
-    core.info(`Checking out SHA ${sha}`)
+    core.info(`Checking out ${sha}`)
     await exec.exec(`git checkout ${sha}`, null, { cwd: WORKING_DIR })
   }
 
@@ -8955,7 +8955,7 @@ function parseRepo () {
 }
 
 run().then(() => {
-  console.log('Action was successful')
+  core.info('Action completed successfully')
 }).catch((e) => {
   core.setFailed(e.toString())
 })

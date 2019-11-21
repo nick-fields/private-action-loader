@@ -16,11 +16,7 @@ This action loads and executes a private Action.  This allows private actions to
 
 ### **`repo-name`**
 
-**Required** The repository containing the action.  A ref can also be appended to specify an exact commit of the action (SHA, tag, or branch). Must be in the format of `{owner}/{repo}` or `{owner}/{repo}@{sha}`.  The following are all valid:
-* `invisionapp/private-action`
-* `invisionapp/private-action@505bd59`
-* `invisionapp/private-action@develop`
-* `invisionapp/private-action@v1`
+**Required** The repository containing the action.  A ref can also be appended to specify an exact commit of the action (SHA, tag, or branch). Must be in the format of `{owner}/{repo}` or `{owner}/{repo}@{sha}`.
 
 ---
 ## **Examples**

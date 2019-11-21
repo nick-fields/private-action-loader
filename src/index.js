@@ -7,6 +7,7 @@ const rimraf = require('rimraf')
 
 const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
 const GITHUB_REPO = core.getInput('repo-name', { required: true })
+
 const WORKING_DIR = './.private-action'
 
 async function run () {
@@ -64,7 +65,7 @@ function parseRepo () {
 }
 
 run().then(() => {
-  console.log('Action was successful')
+  core.info('Action completed successfully')
 }).catch((e) => {
   core.setFailed(e.toString())
 })
