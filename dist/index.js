@@ -5265,6 +5265,9 @@ async function run () {
 
   core.info(`Cloning action from https://***TOKEN***@github.com/${repo}.git${sha ? ` (SHA: ${sha})` : ''}`)
   await exec.exec(cmd)
+  
+  core.info('Remove github token from config')
+  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`, null, { cwd: WORKING_DIR })
 
   if (sha) {
     core.info(`Checking out ${sha}`)
@@ -5279,8 +5282,6 @@ async function run () {
     throw new Error('Malformed action.yml found')
   }
 
-  core.info('Remove github token from config')
-  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`, null, { cwd: WORKING_DIR })
   core.endGroup('Cloning private action')
 
   core.info(`Starting private action ${action.name}`)
