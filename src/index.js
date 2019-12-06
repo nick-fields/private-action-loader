@@ -9,6 +9,9 @@ const GITHUB_REPO = core.getInput('repo-name', { required: true })
 const WORKING_DIR = './.private-action'
 
 async function run () {
+
+  core.info(JSON.stringify(process.env, null, 2));
+
   const { repo, sha } = parseRepo()
 
   core.info('Masking token just in case')
