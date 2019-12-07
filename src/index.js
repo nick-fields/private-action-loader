@@ -10,7 +10,9 @@ const WORKING_DIR = './.private-action'
 
 async function run () {
 
-  core.info(JSON.stringify(process.env, null, 2));
+  const inputs = Object.keys(process.env).filter(k=>k.startsWith('INPUT_'))
+
+  core.info(JSON.stringify(inputs, null, 2));
 
   const { repo, sha } = parseRepo()
 
