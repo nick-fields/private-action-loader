@@ -79,6 +79,8 @@ function setInputs(action){
     return;
   }
 
+  core.info(`The configured inputs are ${Object.keys(action.inputs)}`)
+
   for (const i of Object.keys(action.inputs)) {
     const formattedInputName = `INPUT_${i.toUpperCase()}`;
 
@@ -95,7 +97,7 @@ function setInputs(action){
     }
 
     // input not provided so use the default
-    core.info(`Input ${i} not set.  Using default ${action.inputs[i].default}`)
+    core.info(`Input ${i} not set.  Using default '${action.inputs[i].default}'`)
     process.env[formattedInputName] = action.inputs[i].default
   }
 
