@@ -5287,7 +5287,7 @@ async function run () {
   core.startGroup('Input Setting')
   function getVals(label){
     const keys = Object.keys(process.env)
-    .filter(key => allowed.includes(key))
+    .filter(key => key.startsWith('INPUT_'))
     .reduce((obj, key) => {
       obj[key] = process.env[key];
       return obj;
