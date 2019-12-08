@@ -5316,14 +5316,19 @@ function parseRepo () {
 
 function setInputs(action){
   if (!action.inputs) {
+    core.info('No inputs defined in action.');
     return;
   }
 
   for (const i of Object.keys(action.inputs)) {
     const formattedInputName = `INPUT_${i.toUpperCase()}`;
 
-    if ((process.env[formattedInputName])||(!action.inputs[i].required && !action.inputs[i].default)) {
+    if ((process.env[formattedInputName])) {
+      core.info(`Input ${action.input[i]} already set`)
       // the input was provided, or not provided but not required or w/ default
+      return;
+    } else if (!action.inputs[i].required && !action.inputs[i].default) {
+      core.info(`Input ${action.inputs[i]} not required and has no default`)
       return;
     } else if (action.inputs[i].required && !action.inputs[i].default) {
       // input not provided, is required, and no default set
@@ -5331,6 +5336,7 @@ function setInputs(action){
     }
 
     // input not provided so use the default
+    core.info(`Input ${action.inputs[i]} not set.  Using default ${action.inputs[i].default}`)
     process.env[formattedInputName] = action.inputs[i].default
   }
 
