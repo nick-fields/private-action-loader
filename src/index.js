@@ -87,10 +87,10 @@ function setInputs(action){
     if ((process.env[formattedInputName])) {
       core.info(`Input ${i} already set`)
       // the input was provided
-      break;
+      continue;
     } else if (!action.inputs[i].required && !action.inputs[i].default) {
       core.info(`Input ${i} not required and has no default`)
-      break;
+      continue;
     } else if (action.inputs[i].required && !action.inputs[i].default) {
       // input not provided, is required, and no default set
       core.error(`Input ${i} required but not provided and no default is set`);
