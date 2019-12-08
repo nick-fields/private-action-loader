@@ -41,9 +41,23 @@ async function run () {
     throw new Error('Malformed action.yml found')
   }
 
-  const inputs = setInputs(action)
-  
   core.endGroup('Cloning private action')
+  
+  core.startGroup('Input Setting')
+  function getVals(label){
+    const keys = Object.keys(process.env)
+    .filter(key => allowed.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = process.env[key];
+      return obj;
+    }, {});
+
+    console.log(label, JSON.stringify(keys, null, 2))
+  }
+  getVals('***BEFORE***')
+  setInputs(action)
+  getVals('***AFTER***')
+  core.endGroup('Input Setting')
 
   core.info(`Starting private action ${action.name}`)
   core.startGroup(`${action.name}`)
