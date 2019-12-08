@@ -5324,11 +5324,11 @@ function setInputs(action){
     const formattedInputName = `INPUT_${i.toUpperCase()}`;
 
     if ((process.env[formattedInputName])) {
-      core.info(`Input ${action.input[i]} already set`)
+      core.info(`Input ${i} already set`)
       // the input was provided, or not provided but not required or w/ default
       return;
     } else if (!action.inputs[i].required && !action.inputs[i].default) {
-      core.info(`Input ${action.inputs[i]} not required and has no default`)
+      core.info(`Input ${i} not required and has no default`)
       return;
     } else if (action.inputs[i].required && !action.inputs[i].default) {
       // input not provided, is required, and no default set
@@ -5336,7 +5336,7 @@ function setInputs(action){
     }
 
     // input not provided so use the default
-    core.info(`Input ${action.inputs[i]} not set.  Using default ${action.inputs[i].default}`)
+    core.info(`Input ${i} not set.  Using default ${action.inputs[i].default}`)
     process.env[formattedInputName] = action.inputs[i].default
   }
 
