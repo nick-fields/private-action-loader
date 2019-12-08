@@ -5284,21 +5284,9 @@ async function run () {
 
   core.endGroup('Cloning private action')
   
-  core.startGroup('Input Setting')
-  function getVals(label){
-    const keys = Object.keys(process.env)
-    .filter(key => key.startsWith('INPUT_'))
-    .reduce((obj, key) => {
-      obj[key] = process.env[key];
-      return obj;
-    }, {});
-
-    console.log(label, JSON.stringify(keys, null, 2))
-  }
-  getVals('***BEFORE***')
+  core.startGroup('Input Validation')
   setInputs(action)
-  getVals('***AFTER***')
-  core.endGroup('Input Setting')
+  core.endGroup('Input Validation')
 
   core.info(`Starting private action ${action.name}`)
   core.startGroup(`${action.name}`)
