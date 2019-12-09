@@ -36,12 +36,16 @@ async function run () {
   core.info('Reading action.yml')
   const actionFile = readFileSync(`${WORKING_DIR}/action.yml`, 'utf8')
   const action = parse(actionFile)
-
+  
   if (!(action && action.name && action.runs && action.runs.main)) {
     throw new Error('Malformed action.yml found')
   }
 
   core.endGroup('Cloning private action')
+  
+  core.startGroup('Input Validation')
+  setInputs(action)
+  core.endGroup('Input Validation')
 
   core.info(`Starting private action ${action.name}`)
   core.startGroup(`${action.name}`)
@@ -54,6 +58,32 @@ function parseRepo () {
   return {
     repo: repoArr[0],
     sha: repoArr[1]
+  }
+}
+
+function setInputs(action){
+  if (!action.inputs) {
+    core.info('No inputs defined in action.');
+    return;
+  }
+
+  core.info(`The configured inputs are ${Object.keys(action.inputs)}`)
+
+  for (const i of Object.keys(action.inputs)) {
+    const formattedInputName = `INPUT_${i.toUpperCase()}`;
+
+    if ((process.env[formattedInputName])) {
+      core.info(`Input ${i} already set`);
+      continue;
+    } else if (!action.inputs[i].required && !action.inputs[i].default) {
+      core.info(`Input ${i} not required and has no default`);
+      continue;
+    } else if (action.inputs[i].required && !action.inputs[i].default) {
+      core.error(`Input ${i} required but not provided and no default is set`);
+    }
+
+    core.info(`Input ${i} not set.  Using default '${action.inputs[i].default}'`)
+    process.env[formattedInputName] = action.inputs[i].default
   }
 }
 
