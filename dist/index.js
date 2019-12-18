@@ -8897,10 +8897,11 @@ const { sync } = __webpack_require__(569);
 
 const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
 const GITHUB_REPO = core.getInput('repo-name', { required: true })
+const ACTION_DIRECTORY = core.getInput('action-directory', { required: false })
 const WORKING_DIR = './.private-action'
 
 async function run () {
-  const { repo, sha } = parseRepo()
+  const [ repo, sha ] = GITHUB_REPO.split('@')
 
   core.info('Masking token just in case')
   core.setSecret(GITHUB_TOKEN)
@@ -8924,8 +8925,10 @@ async function run () {
     await exec.exec(`git checkout ${sha}`, null, { cwd: WORKING_DIR })
   }
 
-  core.info('Reading action.yml')
-  const actionFile = readFileSync(`${WORKING_DIR}/action.yml`, 'utf8')
+  const actionPath = ACTION_DIRECTORY ? join(ACTION_DIRECTORY, "action.yml") : "action.yml"
+
+  core.info(`Reading ${actionPath}`)
+  const actionFile = readFileSync(`${WORKING_DIR}/${actionPath}`, 'utf8')
   const action = parse(actionFile)
   
   if (!(action && action.name && action.runs && action.runs.main)) {
@@ -8945,14 +8948,6 @@ async function run () {
 
   core.info(`Cleaning up action`)
   sync(WORKING_DIR)
-}
-
-function parseRepo () {
-  const repoArr = GITHUB_REPO.split('@')
-  return {
-    repo: repoArr[0],
-    sha: repoArr[1]
-  }
 }
 
 function setInputs(action){
