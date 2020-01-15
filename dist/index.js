@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(676);
+/******/ 		return __webpack_require__(325);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -3584,7 +3584,7 @@ var _Collection = _interopRequireDefault(__webpack_require__(380));
 
 var _Node = _interopRequireDefault(__webpack_require__(156));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -4254,165 +4254,33 @@ if (typeof Object.create === 'function') {
 
 "use strict";
 
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _addComment = _interopRequireDefault(__webpack_require__(836));
-
-var _constants = __webpack_require__(49);
-
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
-
-var _Collection = _interopRequireDefault(__webpack_require__(380));
-
-var _Node = _interopRequireDefault(__webpack_require__(156));
-
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// Published as 'yaml/pair'
-const stringifyKey = (key, jsKey, ctx) => {
-  if (jsKey === null) return '';
-  if (typeof jsKey !== 'object') return String(jsKey);
-  if (key instanceof _Node.default && ctx && ctx.doc) return key.toString({
-    anchors: {},
-    doc: ctx.doc,
-    indent: '',
-    inFlow: true,
-    inStringifyKey: true
-  });
-  return JSON.stringify(jsKey);
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+var core = __importStar(__webpack_require__(470));
+var action_1 = __webpack_require__(960);
+var token = core.getInput('repo-token', { required: true });
+var repoName = core.getInput('repo-name', { required: true });
+var actionDirectory = core.getInput('action-directory', { required: false });
+var workDirectory = './.private-action';
+action_1.runAction({
+    token: token,
+    repoName: repoName,
+    actionDirectory: actionDirectory,
+    workDirectory: workDirectory,
+})
+    .then(function () {
+    core.info('Action completed successfully');
+})
+    .catch(function (e) {
+    core.setFailed(e.toString());
+});
 
-class Pair extends _Node.default {
-  constructor(key, value = null) {
-    super();
-    this.key = key;
-    this.value = value;
-    this.type = 'PAIR';
-  }
-
-  get commentBefore() {
-    return this.key && this.key.commentBefore;
-  }
-
-  set commentBefore(cb) {
-    if (this.key == null) this.key = new _Scalar.default(null);
-    this.key.commentBefore = cb;
-  }
-
-  addToJSMap(ctx, map) {
-    const key = (0, _toJSON.default)(this.key, '', ctx);
-
-    if (map instanceof Map) {
-      const value = (0, _toJSON.default)(this.value, key, ctx);
-      map.set(key, value);
-    } else if (map instanceof Set) {
-      map.add(key);
-    } else {
-      const stringKey = stringifyKey(this.key, key, ctx);
-      map[stringKey] = (0, _toJSON.default)(this.value, stringKey, ctx);
-    }
-
-    return map;
-  }
-
-  toJSON(_, ctx) {
-    const pair = ctx && ctx.mapAsMap ? new Map() : {};
-    return this.addToJSMap(ctx, pair);
-  }
-
-  toString(ctx, onComment, onChompKeep) {
-    if (!ctx || !ctx.doc) return JSON.stringify(this);
-    const {
-      simpleKeys
-    } = ctx.doc.options;
-    let {
-      key,
-      value
-    } = this;
-    let keyComment = key instanceof _Node.default && key.comment;
-
-    if (simpleKeys) {
-      if (keyComment) {
-        throw new Error('With simple keys, key nodes cannot have comments');
-      }
-
-      if (key instanceof _Collection.default) {
-        const msg = 'With simple keys, collection cannot be used as a key value';
-        throw new Error(msg);
-      }
-    }
-
-    const explicitKey = !simpleKeys && (!key || keyComment || key instanceof _Collection.default || key.type === _constants.Type.BLOCK_FOLDED || key.type === _constants.Type.BLOCK_LITERAL);
-    const {
-      doc,
-      indent
-    } = ctx;
-    ctx = Object.assign({}, ctx, {
-      implicitKey: !explicitKey,
-      indent: indent + '  '
-    });
-    let chompKeep = false;
-    let str = doc.schema.stringify(key, ctx, () => keyComment = null, () => chompKeep = true);
-    str = (0, _addComment.default)(str, ctx.indent, keyComment);
-
-    if (ctx.allNullValues && !simpleKeys) {
-      if (this.comment) {
-        str = (0, _addComment.default)(str, ctx.indent, this.comment);
-        if (onComment) onComment();
-      } else if (chompKeep && !keyComment && onChompKeep) onChompKeep();
-
-      return ctx.inFlow ? str : `? ${str}`;
-    }
-
-    str = explicitKey ? `? ${str}\n${indent}:` : `${str}:`;
-
-    if (this.comment) {
-      // expected (but not strictly required) to be a single-line comment
-      str = (0, _addComment.default)(str, ctx.indent, this.comment);
-      if (onComment) onComment();
-    }
-
-    let vcb = '';
-    let valueComment = null;
-
-    if (value instanceof _Node.default) {
-      if (value.spaceBefore) vcb = '\n';
-
-      if (value.commentBefore) {
-        const cs = value.commentBefore.replace(/^/gm, `${ctx.indent}#`);
-        vcb += `\n${cs}`;
-      }
-
-      valueComment = value.comment;
-    } else if (value && typeof value === 'object') {
-      value = doc.schema.createNode(value, true);
-    }
-
-    ctx.implicitKey = false;
-    chompKeep = false;
-    const valueStr = doc.schema.stringify(value, ctx, () => valueComment = null, () => chompKeep = true);
-    let ws = ' ';
-
-    if (vcb || this.comment) {
-      ws = `${vcb}\n${ctx.indent}`;
-    } else if (!explicitKey && value instanceof _Collection.default) {
-      const flow = valueStr[0] === '[' || valueStr[0] === '{';
-      if (!flow || valueStr.includes('\n')) ws = `\n${ctx.indent}`;
-    }
-
-    if (chompKeep && !valueComment && onChompKeep) onChompKeep();
-    return (0, _addComment.default)(str + ws + valueStr, ctx.indent, valueComment);
-  }
-
-}
-
-exports.default = Pair;
 
 /***/ }),
 
@@ -4495,7 +4363,7 @@ var _addComment = _interopRequireDefault(__webpack_require__(836));
 
 var _Node = _interopRequireDefault(__webpack_require__(156));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -4671,7 +4539,7 @@ exports.default = exports.MERGE_KEY = void 0;
 
 var _Map = _interopRequireDefault(__webpack_require__(684));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -7077,7 +6945,7 @@ var _errors = __webpack_require__(405);
 
 var _Map = _interopRequireDefault(__webpack_require__(684));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _parseSeq = _interopRequireDefault(__webpack_require__(858));
 
@@ -8388,7 +8256,7 @@ var _Collection = _interopRequireDefault(__webpack_require__(380));
 
 var _Node = _interopRequireDefault(__webpack_require__(156));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -8885,106 +8753,6 @@ function slice (args) {
 
 /***/ }),
 
-/***/ 676:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
-
-const exec = __webpack_require__(986)
-const core = __webpack_require__(470)
-const { parse } = __webpack_require__(521)
-const { readFileSync } = __webpack_require__(747)
-const { join } = __webpack_require__(622)
-const { sync } = __webpack_require__(569);
-
-const GITHUB_TOKEN = core.getInput('repo-token', { required: true })
-const GITHUB_REPO = core.getInput('repo-name', { required: true })
-const ACTION_DIRECTORY = core.getInput('action-directory', { required: false })
-const WORKING_DIR = './.private-action'
-
-async function run () {
-  const [ repo, sha ] = GITHUB_REPO.split('@')
-
-  core.info('Masking token just in case')
-  core.setSecret(GITHUB_TOKEN)
-
-  core.startGroup('Cloning private action')
-  const repoUrl = `https://${GITHUB_TOKEN}@github.com/${repo}.git`
-  const cmd = [
-    'git clone',
-    repoUrl,
-    WORKING_DIR
-  ].join(' ')
-
-  core.info(`Cloning action from https://***TOKEN***@github.com/${repo}.git${sha ? ` (SHA: ${sha})` : ''}`)
-  await exec.exec(cmd)
-
-  core.info('Remove github token from config')
-  await exec.exec(`git remote set-url origin https://github.com/${repo}.git`, null, { cwd: WORKING_DIR })
-
-  if (sha) {
-    core.info(`Checking out ${sha}`)
-    await exec.exec(`git checkout ${sha}`, null, { cwd: WORKING_DIR })
-  }
-
-  const actionPath = ACTION_DIRECTORY ? join(ACTION_DIRECTORY, "action.yml") : "action.yml"
-
-  core.info(`Reading ${actionPath}`)
-  const actionFile = readFileSync(`${WORKING_DIR}/${actionPath}`, 'utf8')
-  const action = parse(actionFile)
-  
-  if (!(action && action.name && action.runs && action.runs.main)) {
-    throw new Error('Malformed action.yml found')
-  }
-
-  core.endGroup('Cloning private action')
-  
-  core.startGroup('Input Validation')
-  setInputs(action)
-  core.endGroup('Input Validation')
-
-  core.info(`Starting private action ${action.name}`)
-  core.startGroup(`${action.name}`)
-  await exec.exec(`node ${join(WORKING_DIR, action.runs.main)}`)
-  core.endGroup(`${action.name}`)
-
-  core.info(`Cleaning up action`)
-  sync(WORKING_DIR)
-}
-
-function setInputs(action){
-  if (!action.inputs) {
-    core.info('No inputs defined in action.');
-    return;
-  }
-
-  core.info(`The configured inputs are ${Object.keys(action.inputs)}`)
-
-  for (const i of Object.keys(action.inputs)) {
-    const formattedInputName = `INPUT_${i.toUpperCase()}`;
-
-    if ((process.env[formattedInputName])) {
-      core.info(`Input ${i} already set`);
-      continue;
-    } else if (!action.inputs[i].required && !action.inputs[i].default) {
-      core.info(`Input ${i} not required and has no default`);
-      continue;
-    } else if (action.inputs[i].required && !action.inputs[i].default) {
-      core.error(`Input ${i} required but not provided and no default is set`);
-    }
-
-    core.info(`Input ${i} not set.  Using default '${action.inputs[i].default}'`)
-    process.env[formattedInputName] = action.inputs[i].default
-  }
-}
-
-run().then(() => {
-  core.info('Action completed successfully')
-}).catch((e) => {
-  core.setFailed(e.toString())
-})
-
-
-/***/ }),
-
 /***/ 681:
 /***/ (function(module) {
 
@@ -9027,7 +8795,7 @@ exports.default = void 0;
 
 var _Collection = _interopRequireDefault(__webpack_require__(380));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -9527,6 +9295,173 @@ function resolveComments(collection, comments) {
 
 /***/ }),
 
+/***/ 740:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _addComment = _interopRequireDefault(__webpack_require__(836));
+
+var _constants = __webpack_require__(49);
+
+var _toJSON = _interopRequireDefault(__webpack_require__(923));
+
+var _Collection = _interopRequireDefault(__webpack_require__(380));
+
+var _Node = _interopRequireDefault(__webpack_require__(156));
+
+var _Scalar = _interopRequireDefault(__webpack_require__(515));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Published as 'yaml/pair'
+const stringifyKey = (key, jsKey, ctx) => {
+  if (jsKey === null) return '';
+  if (typeof jsKey !== 'object') return String(jsKey);
+  if (key instanceof _Node.default && ctx && ctx.doc) return key.toString({
+    anchors: {},
+    doc: ctx.doc,
+    indent: '',
+    inFlow: true,
+    inStringifyKey: true
+  });
+  return JSON.stringify(jsKey);
+};
+
+class Pair extends _Node.default {
+  constructor(key, value = null) {
+    super();
+    this.key = key;
+    this.value = value;
+    this.type = 'PAIR';
+  }
+
+  get commentBefore() {
+    return this.key && this.key.commentBefore;
+  }
+
+  set commentBefore(cb) {
+    if (this.key == null) this.key = new _Scalar.default(null);
+    this.key.commentBefore = cb;
+  }
+
+  addToJSMap(ctx, map) {
+    const key = (0, _toJSON.default)(this.key, '', ctx);
+
+    if (map instanceof Map) {
+      const value = (0, _toJSON.default)(this.value, key, ctx);
+      map.set(key, value);
+    } else if (map instanceof Set) {
+      map.add(key);
+    } else {
+      const stringKey = stringifyKey(this.key, key, ctx);
+      map[stringKey] = (0, _toJSON.default)(this.value, stringKey, ctx);
+    }
+
+    return map;
+  }
+
+  toJSON(_, ctx) {
+    const pair = ctx && ctx.mapAsMap ? new Map() : {};
+    return this.addToJSMap(ctx, pair);
+  }
+
+  toString(ctx, onComment, onChompKeep) {
+    if (!ctx || !ctx.doc) return JSON.stringify(this);
+    const {
+      simpleKeys
+    } = ctx.doc.options;
+    let {
+      key,
+      value
+    } = this;
+    let keyComment = key instanceof _Node.default && key.comment;
+
+    if (simpleKeys) {
+      if (keyComment) {
+        throw new Error('With simple keys, key nodes cannot have comments');
+      }
+
+      if (key instanceof _Collection.default) {
+        const msg = 'With simple keys, collection cannot be used as a key value';
+        throw new Error(msg);
+      }
+    }
+
+    const explicitKey = !simpleKeys && (!key || keyComment || key instanceof _Collection.default || key.type === _constants.Type.BLOCK_FOLDED || key.type === _constants.Type.BLOCK_LITERAL);
+    const {
+      doc,
+      indent
+    } = ctx;
+    ctx = Object.assign({}, ctx, {
+      implicitKey: !explicitKey,
+      indent: indent + '  '
+    });
+    let chompKeep = false;
+    let str = doc.schema.stringify(key, ctx, () => keyComment = null, () => chompKeep = true);
+    str = (0, _addComment.default)(str, ctx.indent, keyComment);
+
+    if (ctx.allNullValues && !simpleKeys) {
+      if (this.comment) {
+        str = (0, _addComment.default)(str, ctx.indent, this.comment);
+        if (onComment) onComment();
+      } else if (chompKeep && !keyComment && onChompKeep) onChompKeep();
+
+      return ctx.inFlow ? str : `? ${str}`;
+    }
+
+    str = explicitKey ? `? ${str}\n${indent}:` : `${str}:`;
+
+    if (this.comment) {
+      // expected (but not strictly required) to be a single-line comment
+      str = (0, _addComment.default)(str, ctx.indent, this.comment);
+      if (onComment) onComment();
+    }
+
+    let vcb = '';
+    let valueComment = null;
+
+    if (value instanceof _Node.default) {
+      if (value.spaceBefore) vcb = '\n';
+
+      if (value.commentBefore) {
+        const cs = value.commentBefore.replace(/^/gm, `${ctx.indent}#`);
+        vcb += `\n${cs}`;
+      }
+
+      valueComment = value.comment;
+    } else if (value && typeof value === 'object') {
+      value = doc.schema.createNode(value, true);
+    }
+
+    ctx.implicitKey = false;
+    chompKeep = false;
+    const valueStr = doc.schema.stringify(value, ctx, () => valueComment = null, () => chompKeep = true);
+    let ws = ' ';
+
+    if (vcb || this.comment) {
+      ws = `${vcb}\n${ctx.indent}`;
+    } else if (!explicitKey && value instanceof _Collection.default) {
+      const flow = valueStr[0] === '[' || valueStr[0] === '{';
+      if (!flow || valueStr.includes('\n')) ws = `\n${ctx.indent}`;
+    }
+
+    if (chompKeep && !valueComment && onChompKeep) onChompKeep();
+    return (0, _addComment.default)(str + ws + valueStr, ctx.indent, valueComment);
+  }
+
+}
+
+exports.default = Pair;
+
+/***/ }),
+
 /***/ 747:
 /***/ (function(module) {
 
@@ -9555,7 +9490,7 @@ var _Map = _interopRequireDefault(__webpack_require__(684));
 
 var _Merge = _interopRequireWildcard(__webpack_require__(386));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _parseUtils = __webpack_require__(734);
 
@@ -10043,7 +9978,7 @@ var _errors = __webpack_require__(405);
 
 var _Map = _interopRequireWildcard(__webpack_require__(684));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _parseMap = _interopRequireDefault(__webpack_require__(763));
 
@@ -10310,7 +10245,7 @@ var _toJSON = _interopRequireDefault(__webpack_require__(923));
 
 var _Map = _interopRequireDefault(__webpack_require__(684));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -10535,7 +10470,7 @@ var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _parseUtils = __webpack_require__(734);
 
@@ -10720,7 +10655,7 @@ exports.default = void 0;
 
 var _Collection = _interopRequireDefault(__webpack_require__(380));
 
-var _Pair = _interopRequireDefault(__webpack_require__(325));
+var _Pair = _interopRequireDefault(__webpack_require__(740));
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -11512,6 +11447,146 @@ class Collection extends _Node.default {
 }
 
 exports.default = Collection;
+
+/***/ }),
+
+/***/ 960:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var exec = __importStar(__webpack_require__(986));
+var core = __importStar(__webpack_require__(470));
+var yaml_1 = __webpack_require__(521);
+var fs_1 = __webpack_require__(747);
+var path_1 = __webpack_require__(622);
+var rimraf_1 = __webpack_require__(569);
+function setInputs(action) {
+    if (!action.inputs) {
+        core.info('No inputs defined in action.');
+        return;
+    }
+    core.info("The configured inputs are " + Object.keys(action.inputs));
+    for (var _i = 0, _a = Object.keys(action.inputs); _i < _a.length; _i++) {
+        var i = _a[_i];
+        var formattedInputName = "INPUT_" + i.toUpperCase();
+        if (process.env[formattedInputName]) {
+            core.info("Input " + i + " already set");
+            continue;
+        }
+        else if (!action.inputs[i].required && !action.inputs[i].default) {
+            core.info("Input " + i + " not required and has no default");
+            continue;
+        }
+        else if (action.inputs[i].required && !action.inputs[i].default) {
+            core.error("Input " + i + " required but not provided and no default is set");
+        }
+        core.info("Input " + i + " not set.  Using default '" + action.inputs[i].default + "'");
+        process.env[formattedInputName] = action.inputs[i].default;
+    }
+}
+exports.setInputs = setInputs;
+function runAction(opts) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, repo, sha, repoUrl, cmd, actionPath, actionFile, action;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _a = opts.repoName.split('@'), repo = _a[0], sha = _a[1];
+                    core.info('Masking token just in case');
+                    core.setSecret(opts.token);
+                    core.startGroup('Cloning private action');
+                    repoUrl = "https://" + opts.token + "@github.com/" + repo + ".git";
+                    cmd = ['git clone', repoUrl, opts.workDirectory].join(' ');
+                    core.info("Cloning action from https://***TOKEN***@github.com/" + repo + ".git" + (sha ? " (SHA: " + sha + ")" : ''));
+                    return [4 /*yield*/, exec.exec(cmd)];
+                case 1:
+                    _b.sent();
+                    core.info('Remove github token from config');
+                    return [4 /*yield*/, exec.exec("git remote set-url origin https://github.com/" + repo + ".git", undefined, {
+                            cwd: opts.workDirectory,
+                        })];
+                case 2:
+                    _b.sent();
+                    if (!sha) return [3 /*break*/, 4];
+                    core.info("Checking out " + sha);
+                    return [4 /*yield*/, exec.exec("git checkout " + sha, undefined, { cwd: opts.workDirectory })];
+                case 3:
+                    _b.sent();
+                    _b.label = 4;
+                case 4:
+                    actionPath = opts.actionDirectory
+                        ? path_1.join(opts.workDirectory, opts.actionDirectory)
+                        : opts.workDirectory;
+                    core.info("Reading " + actionPath);
+                    actionFile = fs_1.readFileSync(actionPath + "/action.yml", 'utf8');
+                    action = yaml_1.parse(actionFile);
+                    if (!(action && action.name && action.runs && action.runs.main)) {
+                        throw new Error('Malformed action.yml found');
+                    }
+                    core.endGroup();
+                    core.startGroup('Input Validation');
+                    setInputs(action);
+                    core.endGroup();
+                    core.info("Starting private action " + action.name);
+                    core.startGroup("" + action.name);
+                    return [4 /*yield*/, exec.exec("node " + path_1.join(actionPath, action.runs.main))];
+                case 5:
+                    _b.sent();
+                    core.endGroup();
+                    core.info("Cleaning up action");
+                    rimraf_1.sync(opts.workDirectory);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.runAction = runAction;
+
 
 /***/ }),
 

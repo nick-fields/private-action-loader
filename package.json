@@ -4,11 +4,13 @@
   "description": "Enables private GitHub Actions to be reused across repositories",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "ncc build src/index.js",
-    "lint": "npm run lint:js && npm run lint:yaml",
-    "lint:js": "eslint --config configs/.eslintrc.js src/** --fix",
-    "lint:yaml": "yamllint *.yml *.yaml --fix"
+    "clean": "npx rimraf node_modules dist",
+    "test": "jest --coverage",
+    "prepare": "ncc build src/index.ts",
+    "lint": "npm run lint:ts && npm run lint:yaml",
+    "lint:ts": "eslint --config configs/.eslintrc.js **/*.ts --fix",
+    "lint:yaml": "yamllint *.yml *.yaml --fix",
+    "serve:coverage": "http-server ./coverage/lcov-report"
   },
   "repository": {
     "type": "git",
@@ -28,16 +30,28 @@
     "yaml": "^1.7.2"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.25",
+    "@types/node": "^13.1.6",
+    "@types/rimraf": "^2.0.3",
+    "@types/yaml": "^1.2.0",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
     "@zeit/ncc": "^0.20.5",
     "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.9.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "http-server": "^0.12.1",
     "husky": "^3.1.0",
+    "jest": "^24.9.0",
     "lint-staged": "^9.4.3",
+    "prettier": "^1.19.1",
     "standard": "^14.3.1",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.4",
     "yaml-lint": "^1.2.4"
   },
   "husky": {
