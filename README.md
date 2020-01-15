@@ -22,9 +22,23 @@ This action loads and executes a private Action. This allows private actions to 
 
 **Required** The repository containing the action. A ref can also be appended to specify an exact commit of the action (SHA, tag, or branch). Must be in the format of `{owner}/{repo}` or `{owner}/{repo}@{sha}`.
 
+### **`action-directory`**
+
+**Optional** Directory containing the `action.yml` that you would like to execute in repo. If omitted, the root directory is assumed to be the location of `action.yml`.
+
 ---
 
 ## **Examples**
+
+## Example usage w/ action-directory
+
+```yaml
+- uses: invisionapp/private-action-loader@v1
+  with:
+    repo-token: ${{ secrets.REPO_TOKEN }}
+    repo-name: some-org/super-secret-action
+    action-directory: src/super-secret-nested-action
+```
 
 ## Example usage w/ additional parameters
 
@@ -90,5 +104,4 @@ This action loads and executes a private Action. This allows private actions to 
 ## **Limitations**
 
 - Only supports javascript actions
-- There are no tests yet
 - There is very little error handling so far
