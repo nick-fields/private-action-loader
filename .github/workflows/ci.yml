@@ -4,10 +4,27 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: install
-      run: npm install
-    - name: lint
-      run: npm run lint
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install Pre-requisites
+        run: .github/scripts/ubuntu-init.sh
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: install
+        run: npm install
+      - name: Configure Code Climate
+        run: cc-test-reporter before-build
+        env:
+          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+      - name: lint
+        run: npm run lint
+      - name: test
+        run: npm run test
+      - name: Upload Results to Code Climate
+        if: always()
+        run: cc-test-reporter after-build
+        env:
+          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
