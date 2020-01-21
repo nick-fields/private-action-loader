@@ -107,11 +107,7 @@ describe('runAction', () => {
     expect(checkingOutInfoCalled).toBe(false);
   });
 
-<<<<<<< HEAD
   test('action loaded and executed from expected location when pal-action-directory not specified', async () => {
-=======
-  test('action loaded and executed from expected location when action-directory not specified', async () => {
->>>>>>> 873fcc0... Develop (#8)
     const expectedPath = `${workDirectory}/action.yml`;
     await runAction({
       token,
@@ -123,11 +119,7 @@ describe('runAction', () => {
     expect(exec.exec).toHaveBeenLastCalledWith(`node ${workDirectory}/${mainLocation}`);
   });
 
-<<<<<<< HEAD
   test('action loaded from expected location when pal-action-directory specified', async () => {
-=======
-  test('action loaded from expected location when action-directory specified', async () => {
->>>>>>> 873fcc0... Develop (#8)
     const expectedPath = `${workDirectory}/${actionDirectory}/action.yml`;
     await runAction({
       token,
