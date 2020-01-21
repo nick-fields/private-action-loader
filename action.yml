@@ -1,13 +1,13 @@
 name: Private Action Loader
 description: Enables private Actions to be easily reused across repositories.
 inputs:
-  repo-token:
+  pal-repo-token:
     description: 'Access token with read access to the repo containing action'
     required: true
-  repo-name:
+  pal-repo-name:
     description: 'The organization/user and repo where action is stored, with support for @ref'
     required: true
-  action-directory:
+  pal-action-directory:
     description: 'The optional path to directory containing action.  Useful when multiple private actions are stored in the same repo'
     required: false
 runs:

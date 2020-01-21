@@ -14,15 +14,15 @@ This action loads and executes a private Action. This allows private actions to 
 
 ## **Inputs**
 
-### **`repo-token`**
+### **`pal-repo-token`**
 
 **Required** An access token with the [repo](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) scope to the repository containing the action. **This should be stored as a [repo secret](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)**.
 
-### **`repo-name`**
+### **`pal-repo-name`**
 
 **Required** The repository containing the action. A ref can also be appended to specify an exact commit of the action (SHA, tag, or branch). Must be in the format of `{owner}/{repo}` or `{owner}/{repo}@{sha}`.
 
-### **`action-directory`**
+### **`pal-action-directory`**
 
 **Optional** Directory containing the `action.yml` that you would like to execute in repo. If omitted, the root directory is assumed to be the location of `action.yml`.
 
@@ -30,14 +30,14 @@ This action loads and executes a private Action. This allows private actions to 
 
 ## **Examples**
 
-## Example usage w/ action-directory
+## Example usage w/ pal-action-directory
 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action
-    action-directory: src/super-secret-nested-action
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action
+    pal-action-directory: src/super-secret-nested-action
 ```
 
 ## Example usage w/ additional parameters
@@ -45,8 +45,8 @@ This action loads and executes a private Action. This allows private actions to 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action
     # the following input gets passed to the private action
     input-used-by-other-action: this will be passed to super-secret-action
 ```
@@ -56,8 +56,8 @@ This action loads and executes a private Action. This allows private actions to 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action
 ```
 
 ## Example usage w/ SHA
@@ -65,8 +65,8 @@ This action loads and executes a private Action. This allows private actions to 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action@b8a83a0
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action@b8a83a0
 ```
 
 ## Example usage w/ Branch
@@ -74,8 +74,8 @@ This action loads and executes a private Action. This allows private actions to 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action@master
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action@master
 ```
 
 ## Example usage w/ Tag
@@ -83,8 +83,8 @@ This action loads and executes a private Action. This allows private actions to 
 ```yaml
 - uses: invisionapp/private-action-loader@v1
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action@v1
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action@v1
 ```
 
 ## Example usage w/ Output
@@ -93,8 +93,8 @@ This action loads and executes a private Action. This allows private actions to 
 - uses: invisionapp/private-action-loader@v1
   id: output_example
   with:
-    repo-token: ${{ secrets.REPO_TOKEN }}
-    repo-name: some-org/super-secret-action@v1
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action@v1
 - name: Get the previous output
   run: echo "The previous output was ${{ steps.output_example.outputs.<name of output> }}"
 ```
