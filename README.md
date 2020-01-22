@@ -33,7 +33,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ pal-action-directory
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -43,7 +43,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ additional parameters
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -54,7 +54,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/o additional parameters
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -63,7 +63,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ SHA
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@b8a83a0
@@ -72,7 +72,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Branch
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@master
@@ -81,7 +81,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Tag
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@v1
@@ -90,7 +90,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Output
 
 ```yaml
-- uses: invisionapp/private-action-loader@v1
+- uses: invisionapp/private-action-loader@v3
   id: output_example
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
