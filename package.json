@@ -30,6 +30,9 @@
     "yaml": "^1.7.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@semantic-release/commit-analyzer": "^8.0.0",
     "@types/jest": "^24.9.1",
     "@types/node": "^13.7.0",
     "@types/rimraf": "^2.0.3",
@@ -49,6 +52,7 @@
     "jest": "^24.9.0",
     "lint-staged": "^9.5.0",
     "prettier": "^1.19.1",
+    "semantic-release": "^17.0.0",
     "standard": "^14.3.1",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.5",
@@ -56,7 +60,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run prepare && git add ."
+      "pre-commit": "npm run prepare && git add .",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS || node .lintError.js"
     }
   },
   "lint-staged": {
