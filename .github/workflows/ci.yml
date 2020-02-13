@@ -1,5 +1,10 @@
 name: ci
-on: ['push']
+on: 
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,3 +33,11 @@ jobs:
         run: cc-test-reporter after-build
         env:
           CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+      - name: Test release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --dry-run --branch ${GITHUB_REF##*/}
+      - name: Release
+        run: npx semantic-release # this only runs on master and develop. see .releaserc.js
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

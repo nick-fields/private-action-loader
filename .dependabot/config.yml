@@ -5,6 +5,7 @@ update_configs:
   - package_manager: "javascript"
     directory: "/"
     update_schedule: "weekly"
+    target_branch: "develop"
     # Apply default reviewer to created pull requests
     default_reviewers:
       - "nick-invision"
