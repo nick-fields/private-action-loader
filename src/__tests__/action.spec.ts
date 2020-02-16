@@ -1,7 +1,6 @@
 import * as exec from '@actions/exec';
 import * as core from '@actions/core';
 import { readFileSync } from 'fs';
-import * as yaml from 'yaml';
 import { runAction, setInputs } from '../action';
 
 const mainLocation = `test-main/index.js`;
@@ -213,7 +212,6 @@ describe('setInputs', () => {
   });
 
   test('omitted input that is optional with a default is handled properly', async () => {
-    const name = 'test_input';
     const input = 'INPUT_TEST_INPUT';
     delete process.env[input];
 
@@ -235,7 +233,6 @@ describe('setInputs', () => {
   });
 
   test('omitted input that is required with a default is handled properly', async () => {
-    const name = 'test_input';
     const input = 'INPUT_TEST_INPUT';
     delete process.env[input];
 
