@@ -33,11 +33,15 @@ jobs:
         run: cc-test-reporter after-build
         env:
           CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-      - name: Test release
+      - name: Release
+        if: github.ref == 'refs/heads/master'
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --dry-run --branch ${GITHUB_REF##*/}
-      - name: Release
-        run: npx semantic-release # this only runs on master and develop. see .releaserc.js
+      - name: Update major version tag (e.g., v1)
+        if: github.ref == 'refs/heads/master'
+        run: git tag -f v${MAJOR_VERSION} && git push origin v${MAJOR_VERSION}
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAJOR_VERSION: ${{ steps.semantic.outputs.new_release_major_version }}
