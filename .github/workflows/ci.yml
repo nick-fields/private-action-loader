@@ -41,7 +41,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update major version tag (e.g., v1)
         if: github.ref == 'refs/heads/master'
-        run: git tag -f v${MAJOR_VERSION} && git push origin v${MAJOR_VERSION}
+        run: git tag -f v${MAJOR_VERSION} && git push --force origin refs/tags/v${MAJOR_VERSION}:refs/tags/v${MAJOR_VERSION}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAJOR_VERSION: ${{ steps.semantic.outputs.new_release_major_version }}
