@@ -54,7 +54,7 @@
     "prettier": "^1.19.1",
     "semantic-release": "^17.0.4",
     "standard": "^14.3.1",
-    "ts-jest": "^25.2.0",
+    "ts-jest": "^25.2.1",
     "typescript": "^3.7.5",
     "yaml-lint": "^1.2.4"
   },
