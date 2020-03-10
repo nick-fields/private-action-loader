@@ -46,6 +46,9 @@ export async function runAction(opts: {
   const repoUrl = `https://${opts.token}@github.com/${repo}.git`;
   const cmd = ['git clone', repoUrl, opts.workDirectory].join(' ');
 
+  core.info(`Cleaning workDirectory`);
+  sync(opts.workDirectory);
+
   core.info(
     `Cloning action from https://***TOKEN***@github.com/${repo}.git${sha ? ` (SHA: ${sha})` : ''}`
   );
