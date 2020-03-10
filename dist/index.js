@@ -12065,6 +12065,8 @@ function runAction(opts) {
                     core.startGroup('Cloning private action');
                     repoUrl = "https://" + opts.token + "@github.com/" + repo + ".git";
                     cmd = ['git clone', repoUrl, opts.workDirectory].join(' ');
+                    core.info("Cleaning workDirectory");
+                    rimraf_1.sync(opts.workDirectory);
                     core.info("Cloning action from https://***TOKEN***@github.com/" + repo + ".git" + (sha ? " (SHA: " + sha + ")" : ''));
                     return [4 /*yield*/, exec.exec(cmd)];
                 case 1:
