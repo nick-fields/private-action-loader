@@ -1100,7 +1100,7 @@ class BlockValue extends _Node.default {
       end -= 1;
 
       if (end <= start) {
-        if (this.chomping === Chomp.KEEP) break;else return '';
+        if (this.chomping === Chomp.KEEP) break;else return ''; // probably never happens
       }
 
       if (ch === '\n') lastNewLine = end;
@@ -1649,15 +1649,8 @@ const schema = [_map.default, _seq.default, {
   identify: value => typeof value === 'boolean',
   default: true,
   tag: 'tag:yaml.org,2002:bool',
-  test: /^true$/,
-  resolve: () => true,
-  stringify: value => JSON.stringify(value)
-}, {
-  identify: value => typeof value === 'boolean',
-  default: true,
-  tag: 'tag:yaml.org,2002:bool',
-  test: /^false$/,
-  resolve: () => false,
+  test: /^true|false$/,
+  resolve: str => str === 'true',
   stringify: value => JSON.stringify(value)
 }, {
   identify: value => typeof value === 'number',
@@ -3915,10 +3908,12 @@ class Schema {
     customTags,
     merge,
     schema,
+    sortMapEntries,
     tags: deprecatedCustomTags
   }) {
     this.merge = !!merge;
     this.name = schema;
+    this.sortMapEntries = sortMapEntries === true ? (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0 : sortMapEntries || null;
     this.tags = _tags.schemas[schema.replace(/\W/g, '')]; // 'yaml-1.1' -> 'yaml11'
 
     if (!this.tags) {
@@ -3985,7 +3980,7 @@ class Schema {
     const obj = {};
 
     if (value && typeof value === 'object' && ctx.prevObjects) {
-      const prev = ctx.prevObjects.find(o => o.value === value);
+      const prev = ctx.prevObjects.get(value);
 
       if (prev) {
         const alias = new _Alias.default(prev); // leaves source dirty; must be cleaned by caller
@@ -3995,10 +3990,11 @@ class Schema {
       }
 
       obj.value = value;
-      ctx.prevObjects.push(obj);
+      ctx.prevObjects.set(value, obj);
     }
 
     obj.node = tagObj.createNode ? tagObj.createNode(this, value, ctx) : wrapScalars ? new _Scalar.default(value) : value;
+    if (tag && obj.node instanceof _Node.default) obj.node.tag = tag;
     return obj.node;
   }
 
@@ -4058,6 +4054,7 @@ class Schema {
         }
       }
     } catch (error) {
+      /* istanbul ignore if */
       if (!error.source) error.source = node;
       doc.errors.push(error);
       node.resolved = null;
@@ -4072,6 +4069,7 @@ class Schema {
     const res = this.resolveNode(doc, node, tagName);
     if (Object.prototype.hasOwnProperty.call(node, 'resolved')) return res;
     const fallback = isMap(node) ? Schema.defaultTags.MAP : isSeq(node) ? Schema.defaultTags.SEQ : Schema.defaultTags.STR;
+    /* istanbul ignore else */
 
     if (fallback) {
       doc.warnings.push(new _errors.YAMLWarning(node, `The tag ${tagName} is unavailable, falling back to ${fallback}`));
@@ -4080,9 +4078,8 @@ class Schema {
       return res;
     } else {
       doc.errors.push(new _errors.YAMLReferenceError(node, `The tag ${tagName} is unavailable`));
+      return null;
     }
-
-    return null;
   }
 
   getTagObject(item) {
@@ -4142,7 +4139,7 @@ class Schema {
       const createCtx = {
         aliasNodes: [],
         onTagObj: o => tagObj = o,
-        prevObjects: []
+        prevObjects: new Map()
       };
       item = this.createNode(item, true, null, createCtx);
       const {
@@ -4164,6 +4161,7 @@ class Schema {
     if (item instanceof _Pair.default) return item.toString(ctx, onComment, onChompKeep);
     if (!tagObj) tagObj = this.getTagObject(item);
     const props = this.stringifyProps(item, tagObj, ctx);
+    if (props.length > 0) ctx.indentAtStart = (ctx.indentAtStart || 0) + props.length + 1;
     const str = typeof tagObj.stringify === 'function' ? tagObj.stringify(item, ctx, onComment, onChompKeep) : item instanceof _Collection.default ? item.toString(ctx, onComment, onChompKeep) : (0, _stringify.stringifyString)(item, ctx, onComment, onChompKeep);
     return props ? item instanceof _Collection.default && str[0] !== '{' && str[0] !== '[' ? `${props}\n${ctx.indent}${str}` : `${props} ${str}` : str;
   }
@@ -4605,7 +4603,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.tags = exports.schemas = void 0;
 
-var _core = _interopRequireDefault(__webpack_require__(775));
+var _core = _interopRequireWildcard(__webpack_require__(775));
 
 var _failsafe = _interopRequireDefault(__webpack_require__(195));
 
@@ -4629,6 +4627,10 @@ var _timestamp = __webpack_require__(414);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
 const schemas = {
   core: _core.default,
   failsafe: _failsafe.default,
@@ -4638,9 +4640,17 @@ const schemas = {
 exports.schemas = schemas;
 const tags = {
   binary: _binary.default,
+  bool: _core.boolObj,
+  float: _core.floatObj,
+  floatExp: _core.expObj,
+  floatNaN: _core.nanObj,
   floatTime: _timestamp.floatTime,
+  int: _core.intObj,
+  intHex: _core.hexObj,
+  intOct: _core.octObj,
   intTime: _timestamp.intTime,
   map: _map.default,
+  null: _core.nullObj,
   omap: _omap.default,
   pairs: _pairs.default,
   seq: _seq.default,
@@ -4681,23 +4691,38 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-// null, undefined, or an empty non-string iterable (e.g. [])
+function collectionFromPath(schema, path, value) {
+  let v = value;
+
+  for (let i = path.length - 1; i >= 0; --i) {
+    const k = path[i];
+    const o = Number.isInteger(k) && k >= 0 ? [] : {};
+    o[k] = v;
+    v = o;
+  }
+
+  return schema.createNode(v, false);
+} // null, undefined, or an empty non-string iterable (e.g. [])
+
+
 const isEmptyPath = path => path == null || typeof path === 'object' && path[Symbol.iterator]().next().done;
 
 exports.isEmptyPath = isEmptyPath;
 
 class Collection extends _Node.default {
-  constructor(...args) {
-    super(...args);
+  constructor(schema) {
+    super();
 
     _defineProperty(this, "items", []);
+
+    this.schema = schema;
   }
 
   addIn(path, value) {
     if (isEmptyPath(path)) this.add(value);else {
       const [key, ...rest] = path;
       const node = this.get(key, true);
-      if (node instanceof Collection) node.addIn(rest, value);else throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
+      if (node instanceof Collection) node.addIn(rest, value);else if (node === undefined && this.schema) this.set(key, collectionFromPath(this.schema, rest, value));else throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
     }
   }
 
@@ -4731,9 +4756,11 @@ class Collection extends _Node.default {
       this.set(key, value);
     } else {
       const node = this.get(key, true);
-      if (node instanceof Collection) node.setIn(rest, value);else throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
+      if (node instanceof Collection) node.setIn(rest, value);else if (node === undefined && this.schema) this.set(key, collectionFromPath(this.schema, rest, value));else throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
     }
   } // overridden in implementations
+
+  /* istanbul ignore next */
 
 
   toJSON() {
@@ -6351,7 +6378,13 @@ var _options = __webpack_require__(422);
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; if (obj != null) { var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+const getFoldOptions = ({
+  indentAtStart
+}) => indentAtStart ? Object.assign({
+  indentAtStart
+}, _options.strOptions.fold) : _options.strOptions.fold;
 
 function stringifyNumber({
   format,
@@ -6393,10 +6426,11 @@ function lineLengthOverLimit(str, limit) {
   return true;
 }
 
-function doubleQuotedString(value, {
-  implicitKey,
-  indent
-}) {
+function doubleQuotedString(value, ctx) {
+  const {
+    implicitKey,
+    indent
+  } = ctx;
   const {
     jsonEncoding,
     minMultiLineLength
@@ -6490,7 +6524,7 @@ function doubleQuotedString(value, {
   }
 
   str = start ? str + json.slice(start) : json;
-  return implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_QUOTED, _options.strOptions.fold);
+  return implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx));
 }
 
 function singleQuotedString(value, ctx) {
@@ -6507,7 +6541,7 @@ function singleQuotedString(value, ctx) {
   }
 
   const res = "'" + value.replace(/'/g, "''").replace(/\n+/g, `$&\n${indent}`) + "'";
-  return implicitKey ? res : (0, _foldFlowLines.default)(res, indent, _foldFlowLines.FOLD_FLOW, _options.strOptions.fold);
+  return implicitKey ? res : (0, _foldFlowLines.default)(res, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
 }
 
 function blockString({
@@ -6617,7 +6651,7 @@ function plainString(item, ctx, onComment, onChompKeep) {
     return doubleQuotedString(value, ctx);
   }
 
-  const body = implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_FLOW, _options.strOptions.fold);
+  const body = implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
 
   if (comment && !inFlow && (body.indexOf('\n') !== -1 || comment.indexOf('\n') !== -1)) {
     if (onComment) onComment();
@@ -6797,6 +6831,13 @@ exports.setFailed = setFailed;
 //-----------------------------------------------------------------------
 // Logging Commands
 //-----------------------------------------------------------------------
+/**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
 /**
  * Writes debug message to user log
  * @param message debug message
@@ -7150,6 +7191,10 @@ var _timestamp = __webpack_require__(414);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const boolStringify = ({
+  value
+}) => value ? _options.boolOptions.trueStr : _options.boolOptions.falseStr;
+
 var _default = _failsafe.default.concat([{
   identify: value => value == null,
   createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.default(null) : null,
@@ -7166,9 +7211,7 @@ var _default = _failsafe.default.concat([{
   test: /^(?:Y|y|[Yy]es|YES|[Tt]rue|TRUE|[Oo]n|ON)$/,
   resolve: () => true,
   options: _options.boolOptions,
-  stringify: ({
-    value
-  }) => value ? _options.boolOptions.trueStr : _options.boolOptions.falseStr
+  stringify: boolStringify
 }, {
   identify: value => typeof value === 'boolean',
   default: true,
@@ -7176,9 +7219,7 @@ var _default = _failsafe.default.concat([{
   test: /^(?:N|n|[Nn]o|NO|[Ff]alse|FALSE|[Oo]ff|OFF)$/i,
   resolve: () => false,
   options: _options.boolOptions,
-  stringify: ({
-    value
-  }) => value ? _options.boolOptions.trueStr : _options.boolOptions.falseStr
+  stringify: boolStringify
 }, {
   identify: value => typeof value === 'number',
   default: true,
@@ -7305,7 +7346,7 @@ function parsePairs(doc, cst) {
 }
 
 function createPairs(schema, iterable, ctx) {
-  const pairs = new _Seq.default();
+  const pairs = new _Seq.default(schema);
   pairs.tag = 'tag:yaml.org,2002:pairs';
 
   for (const it of iterable) {
@@ -7746,7 +7787,7 @@ var _toJSON = _interopRequireDefault(__webpack_require__(923));
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; if (obj != null) { var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -8639,6 +8680,7 @@ class Alias extends _Node.default {
       maxAliasCount
     } = ctx;
     const anchor = anchors.find(a => a.node === this.source);
+    /* istanbul ignore if */
 
     if (!anchor || anchor.res === undefined) {
       const msg = 'This should not happen: Alias anchor was not resolved?';
@@ -8692,22 +8734,6 @@ var _Range = _interopRequireDefault(__webpack_require__(19));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Directive extends _Node.default {
-  static endOfDirective(src, offset) {
-    let ch = src[offset];
-
-    while (ch && ch !== '\n' && ch !== '#') ch = src[offset += 1]; // last char can't be whitespace
-
-
-    ch = src[offset - 1];
-
-    while (ch === ' ' || ch === '\t') {
-      offset -= 1;
-      ch = src[offset - 1];
-    }
-
-    return offset;
-  }
-
   constructor() {
     super(_constants.Type.DIRECTIVE);
     this.name = null;
@@ -9338,11 +9364,19 @@ function findPair(items, key) {
 }
 
 class YAMLMap extends _Collection.default {
-  add(pair) {
+  add(pair, overwrite) {
     if (!pair) pair = new _Pair.default(pair);else if (!(pair instanceof _Pair.default)) pair = new _Pair.default(pair.key || pair, pair.value);
     const prev = findPair(this.items, pair.key);
-    if (prev) throw new Error(`Key ${pair.key} already set`);
-    this.items.push(pair);
+    const sortEntries = this.schema && this.schema.sortMapEntries;
+
+    if (prev) {
+      if (overwrite) prev.value = pair.value;else throw new Error(`Key ${pair.key} already set`);
+    } else if (sortEntries) {
+      const i = this.items.findIndex(item => sortEntries(pair, item) < 0);
+      if (i === -1) this.items.push(pair);else this.items.splice(i, 0, pair);
+    } else {
+      this.items.push(pair);
+    }
   }
 
   delete(key) {
@@ -9363,8 +9397,7 @@ class YAMLMap extends _Collection.default {
   }
 
   set(key, value) {
-    const prev = findPair(this.items, key);
-    if (prev) prev.value = value;else this.items.push(new _Pair.default(key, value));
+    this.add(new _Pair.default(key, value), true);
   }
   /**
    * @param {*} arg ignored
@@ -9685,12 +9718,16 @@ var _parseMap = _interopRequireDefault(__webpack_require__(763));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function createMap(schema, obj, ctx) {
-  const map = new _Map.default();
+  const map = new _Map.default(schema);
 
   if (obj instanceof Map) {
     for (const [key, value] of obj) map.items.push(schema.createPair(key, value, ctx));
   } else if (obj && typeof obj === 'object') {
     for (const key of Object.keys(obj)) map.items.push(schema.createPair(key, obj[key], ctx));
+  }
+
+  if (typeof schema.sortMapEntries === 'function') {
+    map.items.sort(schema.sortMapEntries);
   }
 
   return map;
@@ -9964,6 +10001,7 @@ class Pair extends _Node.default {
     }
 
     ctx.implicitKey = false;
+    if (!explicitKey && !this.comment && value instanceof _Scalar.default) ctx.indentAtStart = str.length + 1;
     chompKeep = false;
     const valueStr = doc.schema.stringify(value, ctx, () => valueComment = null, () => chompKeep = true);
     let ws = ' ';
@@ -10023,7 +10061,7 @@ var _Collection = _interopRequireDefault(__webpack_require__(380));
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; if (obj != null) { var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -10360,7 +10398,7 @@ var _Seq = _interopRequireDefault(__webpack_require__(29));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function createSeq(schema, obj, ctx) {
-  const seq = new _Seq.default();
+  const seq = new _Seq.default(schema);
 
   if (obj && obj[Symbol.iterator]) {
     for (const it of obj) {
@@ -10392,7 +10430,7 @@ exports.default = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.floatObj = exports.expObj = exports.nanObj = exports.hexObj = exports.intObj = exports.octObj = exports.boolObj = exports.nullObj = void 0;
 
 var _Scalar = _interopRequireDefault(__webpack_require__(515));
 
@@ -10404,7 +10442,7 @@ var _options = __webpack_require__(422);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var _default = _failsafe.default.concat([{
+const nullObj = {
   identify: value => value == null,
   createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.default(null) : null,
   default: true,
@@ -10413,7 +10451,9 @@ var _default = _failsafe.default.concat([{
   resolve: () => null,
   options: _options.nullOptions,
   stringify: () => _options.nullOptions.nullStr
-}, {
+};
+exports.nullObj = nullObj;
+const boolObj = {
   identify: value => typeof value === 'boolean',
   default: true,
   tag: 'tag:yaml.org,2002:bool',
@@ -10423,7 +10463,9 @@ var _default = _failsafe.default.concat([{
   stringify: ({
     value
   }) => value ? _options.boolOptions.trueStr : _options.boolOptions.falseStr
-}, {
+};
+exports.boolObj = boolObj;
+const octObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:int',
@@ -10433,14 +10475,18 @@ var _default = _failsafe.default.concat([{
   stringify: ({
     value
   }) => '0o' + value.toString(8)
-}, {
+};
+exports.octObj = octObj;
+const intObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:int',
   test: /^[-+]?[0-9]+$/,
   resolve: str => parseInt(str, 10),
   stringify: _stringify.stringifyNumber
-}, {
+};
+exports.intObj = intObj;
+const hexObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:int',
@@ -10450,14 +10496,18 @@ var _default = _failsafe.default.concat([{
   stringify: ({
     value
   }) => '0x' + value.toString(16)
-}, {
+};
+exports.hexObj = hexObj;
+const nanObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:float',
   test: /^(?:[-+]?\.inf|(\.nan))$/i,
   resolve: (str, nan) => nan ? NaN : str[0] === '-' ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY,
   stringify: _stringify.stringifyNumber
-}, {
+};
+exports.nanObj = nanObj;
+const expObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:float',
@@ -10467,7 +10517,9 @@ var _default = _failsafe.default.concat([{
   stringify: ({
     value
   }) => Number(value).toExponential()
-}, {
+};
+exports.expObj = expObj;
+const floatObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:float',
@@ -10480,7 +10532,10 @@ var _default = _failsafe.default.concat([{
   },
 
   stringify: _stringify.stringifyNumber
-}]);
+};
+exports.floatObj = floatObj;
+
+var _default = _failsafe.default.concat([nullObj, boolObj, octObj, intObj, hexObj, nanObj, expObj, floatObj]);
 
 exports.default = _default;
 
@@ -10511,7 +10566,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; if (obj != null) { var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -10715,8 +10770,12 @@ class BlankLine extends _Node.default {
   constructor() {
     super(_constants.Type.BLANK_LINE);
   }
+  /* istanbul ignore next */
+
 
   get includesTrailingLines() {
+    // This is never called from anywhere, but if it were,
+    // this is the value it should return.
     return true;
   }
   /**
@@ -12154,6 +12213,41 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function createNewNode(type, props) {
+  switch (type) {
+    case _constants.Type.ALIAS:
+      return new _Alias.default(type, props);
+
+    case _constants.Type.BLOCK_FOLDED:
+    case _constants.Type.BLOCK_LITERAL:
+      return new _BlockValue.default(type, props);
+
+    case _constants.Type.FLOW_MAP:
+    case _constants.Type.FLOW_SEQ:
+      return new _FlowCollection.default(type, props);
+
+    case _constants.Type.MAP_KEY:
+    case _constants.Type.MAP_VALUE:
+    case _constants.Type.SEQ_ITEM:
+      return new _CollectionItem.default(type, props);
+
+    case _constants.Type.COMMENT:
+    case _constants.Type.PLAIN:
+      return new _PlainValue.default(type, props);
+
+    case _constants.Type.QUOTE_DOUBLE:
+      return new _QuoteDouble.default(type, props);
+
+    case _constants.Type.QUOTE_SINGLE:
+      return new _QuoteSingle.default(type, props);
+
+    /* istanbul ignore next */
+
+    default:
+      return null;
+    // should never happen
+  }
+}
 /**
  * @param {boolean} atLineStart - Node starts at beginning of line
  * @param {boolean} inFlow - true if currently in a flow context
@@ -12163,6 +12257,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @param {Node} parent - The parent of the node
  * @param {string} src - Source of the YAML document
  */
+
+
 class ParseContext {
   static parseType(src, offset, inFlow) {
     switch (src[offset]) {
@@ -12217,52 +12313,14 @@ class ParseContext {
         type,
         valueStart
       } = context.parseProps(start);
-      let node;
-
-      switch (type) {
-        case _constants.Type.ALIAS:
-          node = new _Alias.default(type, props);
-          break;
-
-        case _constants.Type.BLOCK_FOLDED:
-        case _constants.Type.BLOCK_LITERAL:
-          node = new _BlockValue.default(type, props);
-          break;
-
-        case _constants.Type.FLOW_MAP:
-        case _constants.Type.FLOW_SEQ:
-          node = new _FlowCollection.default(type, props);
-          break;
-
-        case _constants.Type.MAP_KEY:
-        case _constants.Type.MAP_VALUE:
-        case _constants.Type.SEQ_ITEM:
-          node = new _CollectionItem.default(type, props);
-          break;
-
-        case _constants.Type.COMMENT:
-        case _constants.Type.PLAIN:
-          node = new _PlainValue.default(type, props);
-          break;
-
-        case _constants.Type.QUOTE_DOUBLE:
-          node = new _QuoteDouble.default(type, props);
-          break;
-
-        case _constants.Type.QUOTE_SINGLE:
-          node = new _QuoteSingle.default(type, props);
-          break;
-
-        default:
-          node.error = new _errors.YAMLSyntaxError(node, `Unknown node type: ${JSON.stringify(type)}`);
-          node.range = new _Range.default(start, start + 1);
-          return node;
-      }
-
+      const node = createNewNode(type, props);
       let offset = node.parse(context, valueStart);
       node.range = new _Range.default(start, offset);
+      /* istanbul ignore if */
 
       if (offset <= start) {
+        // This should never happen, but if it does, let's make sure to at least
+        // step one character forward to avoid a busy loop.
         node.error = new Error(`Node#parse consumed no characters`);
         node.error.parseEnd = offset;
         node.error.source = node;
@@ -12291,19 +12349,6 @@ class ParseContext {
     this.parent = parent != null ? parent : orig.parent || {};
     this.root = orig.root;
     this.src = orig.src;
-  } // for logging
-
-
-  get pretty() {
-    const obj = {
-      start: `${this.lineStart} + ${this.indent}`,
-      in: [],
-      parent: this.parent.type
-    };
-    if (!this.atLineStart) obj.start += ' + N';
-    if (this.inCollection) obj.in.push('collection');
-    if (this.inFlow) obj.in.push('flow');
-    return obj;
   }
 
   nodeStartsCollection(node) {
@@ -12561,11 +12606,6 @@ class Node {
   static atBlank(src, offset, endAsBlank) {
     const ch = src[offset];
     return ch === '\n' || ch === '\t' || ch === ' ' || endAsBlank && !ch;
-  }
-
-  static atCollectionItem(src, offset) {
-    const ch = src[offset];
-    return (ch === '?' || ch === ':' || ch === '-') && Node.atBlank(src, offset + 1, true);
   }
 
   static nextNodeIsIndented(ch, indentDiff, indicatorAsIndent) {
