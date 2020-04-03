@@ -4,8 +4,8 @@ update_configs:
   # new versions are published to the npm registry
   - package_manager: "javascript"
     directory: "/"
-    update_schedule: "weekly"
-    target_branch: "develop"
+    update_schedule: "daily"
+    target_branch: "master"
     # Apply default reviewer to created pull requests
     default_reviewers:
       - "nick-invision"
