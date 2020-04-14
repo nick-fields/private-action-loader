@@ -10512,7 +10512,7 @@ const expObj = {
   default: true,
   tag: 'tag:yaml.org,2002:float',
   format: 'EXP',
-  test: /^[-+]?(?:0|[1-9][0-9]*)(\.[0-9]*)?[eE][-+]?[0-9]+$/,
+  test: /^[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)[eE][-+]?[0-9]+$/,
   resolve: str => parseFloat(str),
   stringify: ({
     value
@@ -10523,9 +10523,10 @@ const floatObj = {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:float',
-  test: /^[-+]?(?:0|[1-9][0-9]*)\.([0-9]*)$/,
+  test: /^[-+]?(?:\.([0-9]+)|[0-9]+\.([0-9]*))$/,
 
-  resolve(str, frac) {
+  resolve(str, frac1, frac2) {
+    const frac = frac1 || frac2;
     const node = new _Scalar.default(parseFloat(str));
     if (frac && frac[frac.length - 1] === '0') node.minFractionDigits = frac.length;
     return node;
@@ -12941,18 +12942,21 @@ var _default = {
    *   document.querySelector('#photo').src = URL.createObjectURL(blob)
    */
   resolve: (doc, node) => {
+    const src = (0, _string.resolveString)(doc, node);
+
     if (typeof Buffer === 'function') {
-      const src = (0, _string.resolveString)(doc, node);
       return Buffer.from(src, 'base64');
     } else if (typeof atob === 'function') {
-      const src = atob((0, _string.resolveString)(doc, node));
-      const buffer = new Uint8Array(src.length);
+      // On IE 11, atob() can't handle newlines
+      const str = atob(src.replace(/[\n\r]/g, ''));
+      const buffer = new Uint8Array(str.length);
 
-      for (let i = 0; i < src.length; ++i) buffer[i] = src.charCodeAt(i);
+      for (let i = 0; i < str.length; ++i) buffer[i] = str.charCodeAt(i);
 
       return buffer;
     } else {
-      doc.errors.push(new _errors.YAMLReferenceError(node, 'This environment does not support reading binary tags; either Buffer or atob is required'));
+      const msg = 'This environment does not support reading binary tags; either Buffer or atob is required';
+      doc.errors.push(new _errors.YAMLReferenceError(node, msg));
       return null;
     }
   },
