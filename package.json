@@ -10,7 +10,7 @@
     "lint": "npm run lint:ts && npm run lint:yaml",
     "lint:ts": "eslint --config configs/.eslintrc.js **/*.ts --fix",
     "lint:yaml": "yamllint *.yml *.yaml --fix",
-    "serve:coverage": "http-server ./coverage/lcov-report"
+    "serve:coverage": "npx http-server ./coverage/lcov-report"
   },
   "repository": {
     "type": "git",
