@@ -12158,11 +12158,9 @@ function runAction(opts) {
                     setInputs(action);
                     core.endGroup();
                     core.info("Starting private action " + action.name);
-                    core.startGroup("" + action.name);
                     return [4 /*yield*/, exec.exec("node " + path_1.join(actionPath, action.runs.main))];
                 case 5:
                     _b.sent();
-                    core.endGroup();
                     core.info("Cleaning up action");
                     rimraf_1.sync(opts.workDirectory);
                     return [2 /*return*/];
