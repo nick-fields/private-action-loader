@@ -85,9 +85,7 @@ export async function runAction(opts: {
   core.endGroup();
 
   core.info(`Starting private action ${action.name}`);
-  core.startGroup(`${action.name}`);
   await exec.exec(`node ${join(actionPath, action.runs.main)}`);
-  core.endGroup();
 
   core.info(`Cleaning up action`);
   sync(opts.workDirectory);
