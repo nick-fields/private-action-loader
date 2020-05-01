@@ -24,7 +24,7 @@
     "url": "https://github.com/invisionapp/private-action-loader/issues"
   },
   "dependencies": {
-    "@actions/core": "^1.2.3",
+    "@actions/core": "^1.2.4",
     "@actions/exec": "^1.0.4",
     "rimraf": "^3.0.2",
     "yaml": "^1.9.2"
