@@ -34,11 +34,11 @@
     "@commitlint/config-conventional": "^8.3.4",
     "@semantic-release/commit-analyzer": "^8.0.1",
     "@types/jest": "^25.2.2",
-    "@types/node": "^13.13.5",
+    "@types/node": "14.0.4",
     "@types/rimraf": "^3.0.0",
     "@types/yaml": "^1.9.7",
-    "@typescript-eslint/eslint-plugin": "2.31.0",
-    "@typescript-eslint/parser": "2.31.0",
+    "@typescript-eslint/eslint-plugin": "2.34.0",
+    "@typescript-eslint/parser": "2.34.0",
     "@zeit/ncc": "^0.22.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
@@ -56,7 +56,7 @@
     "semantic-release": "17.0.7",
     "standard": "^14.3.4",
     "ts-jest": "25.5.1",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.2",
     "yaml-lint": "^1.2.4"
   },
   "husky": {
