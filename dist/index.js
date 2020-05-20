@@ -354,13 +354,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __webpack_require__(87);
-const events = __webpack_require__(614);
-const child = __webpack_require__(129);
-const path = __webpack_require__(622);
-const io = __webpack_require__(1);
-const ioUtil = __webpack_require__(672);
+const os = __importStar(__webpack_require__(87));
+const events = __importStar(__webpack_require__(614));
+const child = __importStar(__webpack_require__(129));
+const path = __importStar(__webpack_require__(622));
+const io = __importStar(__webpack_require__(1));
+const ioUtil = __importStar(__webpack_require__(672));
 /* eslint-disable @typescript-eslint/unbound-method */
 const IS_WINDOWS = process.platform === 'win32';
 /*
@@ -804,6 +811,12 @@ class ToolRunner extends events.EventEmitter {
                         resolve(exitCode);
                     }
                 });
+                if (this.options.input) {
+                    if (!cp.stdin) {
+                        throw new Error('child process missing stdin');
+                    }
+                    cp.stdin.end(this.options.input);
+                }
             });
         });
     }
@@ -980,10 +993,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Range = void 0;
 
 class Range {
   static copy(orig) {
@@ -1040,7 +1050,7 @@ class Range {
 
 }
 
-exports.default = Range;
+exports.Range = Range;
 
 /***/ }),
 
@@ -1050,18 +1060,13 @@ exports.default = Range;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.Chomp = void 0;
+exports.BlockValue = exports.Chomp = void 0;
 
 var _constants = __webpack_require__(49);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Range = __webpack_require__(19);
 
 const Chomp = {
   CLIP: 'CLIP',
@@ -1070,7 +1075,7 @@ const Chomp = {
 };
 exports.Chomp = Chomp;
 
-class BlockValue extends _Node.default {
+class BlockValue extends _Node.Node {
   constructor(type, props) {
     super(type, props);
     this.blockIndent = null;
@@ -1136,7 +1141,7 @@ class BlockValue extends _Node.default {
       if (ch === '\n') {
         if (sep === '\n') str += '\n';else sep = '\n';
       } else {
-        const lineEnd = _Node.default.endOfLine(src, i);
+        const lineEnd = _Node.Node.endOfLine(src, i);
 
         const line = src.slice(i, lineEnd);
         i = lineEnd;
@@ -1194,7 +1199,7 @@ class BlockValue extends _Node.default {
 
         default:
           this.blockIndent = Number(bi) || null;
-          this.header = new _Range.default(start, offset);
+          this.header = new _Range.Range(start, offset);
           return offset;
       }
 
@@ -1214,9 +1219,9 @@ class BlockValue extends _Node.default {
 
     for (let ch = src[offset]; ch === '\n'; ch = src[offset]) {
       offset += 1;
-      if (_Node.default.atDocumentBoundary(src, offset)) break;
+      if (_Node.Node.atDocumentBoundary(src, offset)) break;
 
-      const end = _Node.default.endOfBlockIndent(src, bi, offset); // should not include tab?
+      const end = _Node.Node.endOfBlockIndent(src, bi, offset); // should not include tab?
 
 
       if (end === null) break;
@@ -1243,7 +1248,7 @@ class BlockValue extends _Node.default {
       if (src[end] === '\n') {
         offset = end;
       } else {
-        offset = valueEnd = _Node.default.endOfLine(src, end);
+        offset = valueEnd = _Node.Node.endOfLine(src, end);
       }
     }
 
@@ -1251,7 +1256,7 @@ class BlockValue extends _Node.default {
       offset = src[valueEnd] ? valueEnd + 1 : valueEnd;
     }
 
-    this.valueRange = new _Range.default(start + 1, offset);
+    this.valueRange = new _Range.Range(start + 1, offset);
     return offset;
   }
   /**
@@ -1282,7 +1287,7 @@ class BlockValue extends _Node.default {
       src
     } = context;
     let offset = this.parseBlockHeader(start);
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     offset = this.parseComment(offset);
     offset = this.parseBlockValue(offset);
     return offset;
@@ -1295,7 +1300,7 @@ class BlockValue extends _Node.default {
 
 }
 
-exports.default = BlockValue;
+exports.BlockValue = BlockValue;
 
 /***/ }),
 
@@ -1305,27 +1310,22 @@ exports.default = BlockValue;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.YAMLSeq = void 0;
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
+var _toJSON = __webpack_require__(923);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Scalar = __webpack_require__(515);
 
 // Published as 'yaml/seq'
 function asItemIndex(key) {
-  let idx = key instanceof _Scalar.default ? key.value : key;
+  let idx = key instanceof _Scalar.Scalar ? key.value : key;
   if (idx && typeof idx === 'string') idx = Number(idx);
   return Number.isInteger(idx) && idx >= 0 ? idx : null;
 }
 
-class YAMLSeq extends _Collection.default {
+class YAMLSeq extends _Collection.Collection {
   add(value) {
     this.items.push(value);
   }
@@ -1341,7 +1341,7 @@ class YAMLSeq extends _Collection.default {
     const idx = asItemIndex(key);
     if (typeof idx !== 'number') return undefined;
     const it = this.items[idx];
-    return !keepScalar && it instanceof _Scalar.default ? it.value : it;
+    return !keepScalar && it instanceof _Scalar.Scalar ? it.value : it;
   }
 
   has(key) {
@@ -1360,7 +1360,7 @@ class YAMLSeq extends _Collection.default {
     if (ctx && ctx.onCreate) ctx.onCreate(seq);
     let i = 0;
 
-    for (const item of this.items) seq.push((0, _toJSON.default)(item, String(i++), ctx));
+    for (const item of this.items) seq.push((0, _toJSON.toJSON)(item, String(i++), ctx));
 
     return seq;
   }
@@ -1380,7 +1380,7 @@ class YAMLSeq extends _Collection.default {
 
 }
 
-exports.default = YAMLSeq;
+exports.YAMLSeq = YAMLSeq;
 
 /***/ }),
 
@@ -1390,9 +1390,6 @@ exports.default = YAMLSeq;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.getLinePos = getLinePos;
 exports.getLine = getLine;
 exports.getPrettyContext = getPrettyContext;
@@ -1575,9 +1572,6 @@ function getPrettyContext({
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.Type = exports.Char = void 0;
 const Char = {
   ANCHOR: '&',
@@ -1616,64 +1610,68 @@ exports.Type = Type;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.json = void 0;
 
-var _map = _interopRequireDefault(__webpack_require__(732));
+var _map = __webpack_require__(732);
 
-var _seq = _interopRequireDefault(__webpack_require__(767));
+var _seq = __webpack_require__(767);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
 var _string = __webpack_require__(591);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _options = __webpack_require__(422);
 
-const schema = [_map.default, _seq.default, {
+/* global BigInt */
+const intIdentify = value => typeof value === 'bigint' || Number.isInteger(value);
+
+const stringifyJSON = ({
+  value
+}) => JSON.stringify(value);
+
+const json = [_map.map, _seq.seq, {
   identify: value => typeof value === 'string',
   default: true,
   tag: 'tag:yaml.org,2002:str',
   resolve: _string.resolveString,
-  stringify: value => JSON.stringify(value)
+  stringify: stringifyJSON
 }, {
   identify: value => value == null,
-  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.default(null) : null,
+  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.Scalar(null) : null,
   default: true,
   tag: 'tag:yaml.org,2002:null',
   test: /^null$/,
   resolve: () => null,
-  stringify: value => JSON.stringify(value)
+  stringify: stringifyJSON
 }, {
   identify: value => typeof value === 'boolean',
   default: true,
   tag: 'tag:yaml.org,2002:bool',
   test: /^true|false$/,
   resolve: str => str === 'true',
-  stringify: value => JSON.stringify(value)
+  stringify: stringifyJSON
 }, {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   test: /^-?(?:0|[1-9][0-9]*)$/,
-  resolve: str => parseInt(str, 10),
-  stringify: value => JSON.stringify(value)
+  resolve: str => _options.intOptions.asBigInt ? BigInt(str) : parseInt(str, 10),
+  stringify: ({
+    value
+  }) => intIdentify(value) ? value.toString() : JSON.stringify(value)
 }, {
   identify: value => typeof value === 'number',
   default: true,
   tag: 'tag:yaml.org,2002:float',
   test: /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?$/,
   resolve: str => parseFloat(str),
-  stringify: value => JSON.stringify(value)
+  stringify: stringifyJSON
 }];
+exports.json = json;
 
-schema.scalarFallback = str => {
+json.scalarFallback = str => {
   throw new SyntaxError(`Unresolved plain scalar ${JSON.stringify(str)}`);
 };
-
-var _default = schema;
-exports.default = _default;
 
 /***/ }),
 
@@ -2930,18 +2928,13 @@ exports.realpath = function realpath(p, cache, cb) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.PlainValue = void 0;
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class PlainValue extends _Node.default {
+class PlainValue extends _Node.Node {
   static endOfLine(src, start, inFlow) {
     let ch = src[start];
     let offset = start;
@@ -2984,7 +2977,7 @@ class PlainValue extends _Node.default {
         const {
           fold,
           offset
-        } = _Node.default.foldNewline(src, i, -1);
+        } = _Node.Node.foldNewline(src, i, -1);
 
         str += fold;
         i = offset;
@@ -3017,9 +3010,9 @@ class PlainValue extends _Node.default {
     let valueEnd = start;
 
     for (let ch = src[offset]; ch === '\n'; ch = src[offset]) {
-      if (_Node.default.atDocumentBoundary(src, offset + 1)) break;
+      if (_Node.Node.atDocumentBoundary(src, offset + 1)) break;
 
-      const end = _Node.default.endOfBlockIndent(src, indent, offset + 1);
+      const end = _Node.Node.endOfBlockIndent(src, indent, offset + 1);
 
       if (end === null || src[end] === '#') break;
 
@@ -3075,8 +3068,8 @@ class PlainValue extends _Node.default {
       offset = PlainValue.endOfLine(src, start, inFlow);
     }
 
-    this.valueRange = new _Range.default(start, offset);
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    this.valueRange = new _Range.Range(start, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     offset = this.parseComment(offset);
 
     if (!this.hasComment || this.valueRange.isEmpty()) {
@@ -3088,7 +3081,7 @@ class PlainValue extends _Node.default {
 
 }
 
-exports.default = PlainValue;
+exports.PlainValue = PlainValue;
 
 /***/ }),
 
@@ -3105,14 +3098,11 @@ module.exports = require("child_process");
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Node = void 0;
 
 class Node {}
 
-exports.default = Node;
+exports.Node = Node;
 
 /***/ }),
 
@@ -3122,26 +3112,21 @@ exports.default = Node;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.FlowCollection = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _BlankLine = _interopRequireDefault(__webpack_require__(794));
+var _BlankLine = __webpack_require__(794);
 
-var _Comment = _interopRequireDefault(__webpack_require__(487));
+var _Comment = __webpack_require__(487);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class FlowCollection extends _Node.default {
+class FlowCollection extends _Node.Node {
   constructor(type, props) {
     super(type, props);
     this.items = null;
@@ -3149,7 +3134,7 @@ class FlowCollection extends _Node.default {
 
   prevNodeIsJsonLike(idx = this.items.length) {
     const node = this.items[idx - 1];
-    return !!node && (node.jsonLike || node.type === _constants.Type.COMMENT && this.nodeIsJsonLike(idx - 1));
+    return !!node && (node.jsonLike || node.type === _constants.Type.COMMENT && this.prevNodeIsJsonLike(idx - 1));
   }
   /**
    * @param {ParseContext} context
@@ -3175,7 +3160,7 @@ class FlowCollection extends _Node.default {
       offset: start
     }];
 
-    let offset = _Node.default.endOfWhiteSpace(src, start + 1);
+    let offset = _Node.Node.endOfWhiteSpace(src, start + 1);
 
     char = src[offset];
 
@@ -3185,17 +3170,17 @@ class FlowCollection extends _Node.default {
           {
             lineStart = offset + 1;
 
-            const wsEnd = _Node.default.endOfWhiteSpace(src, lineStart);
+            const wsEnd = _Node.Node.endOfWhiteSpace(src, lineStart);
 
             if (src[wsEnd] === '\n') {
-              const blankLine = new _BlankLine.default();
+              const blankLine = new _BlankLine.BlankLine();
               lineStart = blankLine.parse({
                 src
               }, lineStart);
               this.items.push(blankLine);
             }
 
-            offset = _Node.default.endOfIndent(src, lineStart);
+            offset = _Node.Node.endOfIndent(src, lineStart);
 
             if (offset <= lineStart + indent) {
               char = src[offset];
@@ -3220,7 +3205,7 @@ class FlowCollection extends _Node.default {
 
         case '#':
           {
-            const comment = new _Comment.default();
+            const comment = new _Comment.Comment();
             offset = comment.parse({
               src
             }, offset);
@@ -3258,27 +3243,27 @@ class FlowCollection extends _Node.default {
 
             if (!node) {
               // at next document start
-              this.valueRange = new _Range.default(start, offset);
+              this.valueRange = new _Range.Range(start, offset);
               return offset;
             }
 
             this.items.push(node);
-            offset = _Node.default.normalizeOffset(src, node.range.end);
+            offset = _Node.Node.normalizeOffset(src, node.range.end);
           }
       }
 
-      offset = _Node.default.endOfWhiteSpace(src, offset);
+      offset = _Node.Node.endOfWhiteSpace(src, offset);
       char = src[offset];
     }
 
-    this.valueRange = new _Range.default(start, offset + 1);
+    this.valueRange = new _Range.Range(start, offset + 1);
 
     if (char) {
       this.items.push({
         char,
         offset
       });
-      offset = _Node.default.endOfWhiteSpace(src, offset + 1);
+      offset = _Node.Node.endOfWhiteSpace(src, offset + 1);
       offset = this.parseComment(offset);
     }
 
@@ -3288,7 +3273,7 @@ class FlowCollection extends _Node.default {
   setOrigRanges(cr, offset) {
     offset = super.setOrigRanges(cr, offset);
     this.items.forEach(node => {
-      if (node instanceof _Node.default) {
+      if (node instanceof _Node.Node) {
         offset = node.setOrigRanges(cr, offset);
       } else if (cr.length === 0) {
         node.origOffset = node.offset;
@@ -3316,7 +3301,7 @@ class FlowCollection extends _Node.default {
       value
     } = this;
     if (value != null) return value;
-    const nodes = items.filter(item => item instanceof _Node.default);
+    const nodes = items.filter(item => item instanceof _Node.Node);
     let str = '';
     let prevEnd = range.start;
     nodes.forEach(node => {
@@ -3332,12 +3317,12 @@ class FlowCollection extends _Node.default {
       }
     });
     str += src.slice(prevEnd, range.end);
-    return _Node.default.addStringTerminator(src, range.end, str);
+    return _Node.Node.addStringTerminator(src, range.end, str);
   }
 
 }
 
-exports.default = FlowCollection;
+exports.FlowCollection = FlowCollection;
 
 /***/ }),
 
@@ -3347,21 +3332,16 @@ exports.default = FlowCollection;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.failsafe = void 0;
 
-var _map = _interopRequireDefault(__webpack_require__(732));
+var _map = __webpack_require__(732);
 
-var _seq = _interopRequireDefault(__webpack_require__(767));
+var _seq = __webpack_require__(767);
 
-var _string = _interopRequireDefault(__webpack_require__(591));
+var _string = __webpack_require__(591);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var _default = [_map.default, _seq.default, _string.default];
-exports.default = _default;
+const failsafe = [_map.map, _seq.seq, _string.string];
+exports.failsafe = failsafe;
 
 /***/ }),
 
@@ -3864,10 +3844,7 @@ GlobSync.prototype._makeAbs = function (f) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Schema = void 0;
 
 var _warnings = __webpack_require__(847);
 
@@ -3881,17 +3858,15 @@ var _tags = __webpack_require__(339);
 
 var _string = __webpack_require__(591);
 
-var _Alias = _interopRequireDefault(__webpack_require__(637));
+var _Alias = __webpack_require__(637);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
+var _Node = __webpack_require__(156);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Scalar = __webpack_require__(515);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3949,7 +3924,7 @@ class Schema {
   }
 
   createNode(value, wrapScalars, tag, ctx) {
-    if (value instanceof _Node.default) return value;
+    if (value instanceof _Node.Node) return value;
     let tagObj;
 
     if (tag) {
@@ -3963,7 +3938,7 @@ class Schema {
 
       if (!tagObj) {
         if (typeof value.toJSON === 'function') value = value.toJSON();
-        if (typeof value !== 'object') return wrapScalars ? new _Scalar.default(value) : value;
+        if (typeof value !== 'object') return wrapScalars ? new _Scalar.Scalar(value) : value;
         tagObj = value instanceof Map ? _tags.tags.map : value[Symbol.iterator] ? _tags.tags.seq : _tags.tags.map;
       }
     }
@@ -3983,7 +3958,7 @@ class Schema {
       const prev = ctx.prevObjects.get(value);
 
       if (prev) {
-        const alias = new _Alias.default(prev); // leaves source dirty; must be cleaned by caller
+        const alias = new _Alias.Alias(prev); // leaves source dirty; must be cleaned by caller
 
         ctx.aliasNodes.push(alias);
         return alias;
@@ -3993,15 +3968,15 @@ class Schema {
       ctx.prevObjects.set(value, obj);
     }
 
-    obj.node = tagObj.createNode ? tagObj.createNode(this, value, ctx) : wrapScalars ? new _Scalar.default(value) : value;
-    if (tag && obj.node instanceof _Node.default) obj.node.tag = tag;
+    obj.node = tagObj.createNode ? tagObj.createNode(this, value, ctx) : wrapScalars ? new _Scalar.Scalar(value) : value;
+    if (tag && obj.node instanceof _Node.Node) obj.node.tag = tag;
     return obj.node;
   }
 
   createPair(key, value, ctx) {
     const k = this.createNode(key, ctx.wrapScalars, null, ctx);
     const v = this.createNode(value, ctx.wrapScalars, null, ctx);
-    return new _Pair.default(k, v);
+    return new _Pair.Pair(k, v);
   } // falls back to string on no match
 
 
@@ -4020,7 +3995,7 @@ class Schema {
 
         if (match) {
           let res = resolve.apply(null, match);
-          if (!(res instanceof _Scalar.default)) res = new _Scalar.default(res);
+          if (!(res instanceof _Scalar.Scalar)) res = new _Scalar.Scalar(res);
           if (format) res.format = format;
           return res;
         }
@@ -4028,7 +4003,7 @@ class Schema {
     }
 
     if (this.tags.scalarFallback) str = this.tags.scalarFallback(str);
-    return new _Scalar.default(str);
+    return new _Scalar.Scalar(str);
   } // sets node.resolved on success
 
 
@@ -4044,7 +4019,7 @@ class Schema {
     try {
       if (generic) {
         let res = generic.resolve(doc, node);
-        if (!(res instanceof _Collection.default)) res = new _Scalar.default(res);
+        if (!(res instanceof _Collection.Collection)) res = new _Scalar.Scalar(res);
         node.resolved = res;
       } else {
         const str = (0, _string.resolveString)(doc, node);
@@ -4083,7 +4058,7 @@ class Schema {
   }
 
   getTagObject(item) {
-    if (item instanceof _Alias.default) return _Alias.default;
+    if (item instanceof _Alias.Alias) return _Alias.Alias;
 
     if (item.tag) {
       const match = this.tags.filter(t => t.tag === item.tag);
@@ -4092,7 +4067,7 @@ class Schema {
 
     let tagObj, obj;
 
-    if (item instanceof _Scalar.default) {
+    if (item instanceof _Scalar.Scalar) {
       obj = item.value; // TODO: deprecate/remove class check
 
       const match = this.tags.filter(t => t.identify && t.identify(obj) || t.class && obj instanceof t.class);
@@ -4135,7 +4110,7 @@ class Schema {
   stringify(item, ctx, onComment, onChompKeep) {
     let tagObj;
 
-    if (!(item instanceof _Node.default)) {
+    if (!(item instanceof _Node.Node)) {
       const createCtx = {
         aliasNodes: [],
         onTagObj: o => tagObj = o,
@@ -4158,17 +4133,17 @@ class Schema {
     }
 
     ctx.tags = this;
-    if (item instanceof _Pair.default) return item.toString(ctx, onComment, onChompKeep);
+    if (item instanceof _Pair.Pair) return item.toString(ctx, onComment, onChompKeep);
     if (!tagObj) tagObj = this.getTagObject(item);
     const props = this.stringifyProps(item, tagObj, ctx);
     if (props.length > 0) ctx.indentAtStart = (ctx.indentAtStart || 0) + props.length + 1;
-    const str = typeof tagObj.stringify === 'function' ? tagObj.stringify(item, ctx, onComment, onChompKeep) : item instanceof _Collection.default ? item.toString(ctx, onComment, onChompKeep) : (0, _stringify.stringifyString)(item, ctx, onComment, onChompKeep);
-    return props ? item instanceof _Collection.default && str[0] !== '{' && str[0] !== '[' ? `${props}\n${ctx.indent}${str}` : `${props} ${str}` : str;
+    const str = typeof tagObj.stringify === 'function' ? tagObj.stringify(item, ctx, onComment, onChompKeep) : item instanceof _Collection.Collection ? item.toString(ctx, onComment, onChompKeep) : (0, _stringify.stringifyString)(item, ctx, onComment, onChompKeep);
+    return props ? item instanceof _Collection.Collection && str[0] !== '{' && str[0] !== '[' ? `${props}\n${ctx.indent}${str}` : `${props} ${str}` : str;
   }
 
 }
 
-exports.default = Schema;
+exports.Schema = Schema;
 
 _defineProperty(Schema, "defaultPrefix", 'tag:yaml.org,2002:');
 
@@ -4467,16 +4442,11 @@ function expand(str, isTop) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = parse;
+exports.parse = parse;
 
-var _Document = _interopRequireDefault(__webpack_require__(928));
+var _Document = __webpack_require__(928);
 
-var _ParseContext = _interopRequireDefault(__webpack_require__(968));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ParseContext = __webpack_require__(968);
 
 // Published as 'yaml/parse-cst'
 function parse(src) {
@@ -4493,8 +4463,8 @@ function parse(src) {
   let offset = 0;
 
   do {
-    const doc = new _Document.default();
-    const context = new _ParseContext.default({
+    const doc = new _Document.Document();
+    const context = new _ParseContext.ParseContext({
       src
     });
     offset = doc.parse(context, offset);
@@ -4562,11 +4532,23 @@ if (typeof Object.create === 'function') {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -4598,48 +4580,39 @@ action_1.runAction({
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.tags = exports.schemas = void 0;
 
-var _core = _interopRequireWildcard(__webpack_require__(775));
+var _core = __webpack_require__(775);
 
-var _failsafe = _interopRequireDefault(__webpack_require__(195));
+var _failsafe = __webpack_require__(195);
 
-var _json = _interopRequireDefault(__webpack_require__(77));
+var _json = __webpack_require__(77);
 
-var _yaml = _interopRequireDefault(__webpack_require__(550));
+var _yaml = __webpack_require__(550);
 
-var _map = _interopRequireDefault(__webpack_require__(732));
+var _map = __webpack_require__(732);
 
-var _seq = _interopRequireDefault(__webpack_require__(767));
+var _seq = __webpack_require__(767);
 
-var _binary = _interopRequireDefault(__webpack_require__(996));
+var _binary = __webpack_require__(996);
 
-var _omap = _interopRequireDefault(__webpack_require__(821));
+var _omap = __webpack_require__(821);
 
-var _pairs = _interopRequireDefault(__webpack_require__(566));
+var _pairs = __webpack_require__(566);
 
-var _set = _interopRequireDefault(__webpack_require__(785));
+var _set = __webpack_require__(785);
 
 var _timestamp = __webpack_require__(414);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 const schemas = {
-  core: _core.default,
-  failsafe: _failsafe.default,
-  json: _json.default,
-  yaml11: _yaml.default
+  core: _core.core,
+  failsafe: _failsafe.failsafe,
+  json: _json.json,
+  yaml11: _yaml.yaml11
 };
 exports.schemas = schemas;
 const tags = {
-  binary: _binary.default,
+  binary: _binary.binary,
   bool: _core.boolObj,
   float: _core.floatObj,
   floatExp: _core.expObj,
@@ -4649,12 +4622,12 @@ const tags = {
   intHex: _core.hexObj,
   intOct: _core.octObj,
   intTime: _timestamp.intTime,
-  map: _map.default,
+  map: _map.map,
   null: _core.nullObj,
-  omap: _omap.default,
-  pairs: _pairs.default,
-  seq: _seq.default,
-  set: _set.default,
+  omap: _omap.omap,
+  pairs: _pairs.pairs,
+  seq: _seq.seq,
+  set: _set.set,
   timestamp: _timestamp.timestamp
 };
 exports.tags = tags;
@@ -4674,20 +4647,15 @@ module.exports = require("assert");
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.isEmptyPath = void 0;
+exports.Collection = exports.isEmptyPath = void 0;
 
-var _addComment = _interopRequireDefault(__webpack_require__(836));
+var _addComment = __webpack_require__(836);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
+var _constants = __webpack_require__(49);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Node = __webpack_require__(156);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Scalar = __webpack_require__(515);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -4709,7 +4677,7 @@ const isEmptyPath = path => path == null || typeof path === 'object' && path[Sym
 
 exports.isEmptyPath = isEmptyPath;
 
-class Collection extends _Node.default {
+class Collection extends _Node.Node {
   constructor(schema) {
     super();
 
@@ -4734,14 +4702,14 @@ class Collection extends _Node.default {
 
   getIn([key, ...rest], keepScalar) {
     const node = this.get(key, true);
-    if (rest.length === 0) return !keepScalar && node instanceof _Scalar.default ? node.value : node;else return node instanceof Collection ? node.getIn(rest, keepScalar) : undefined;
+    if (rest.length === 0) return !keepScalar && node instanceof _Scalar.Scalar ? node.value : node;else return node instanceof Collection ? node.getIn(rest, keepScalar) : undefined;
   }
 
   hasAllNullValues() {
     return this.items.every(node => {
-      if (!(node instanceof _Pair.default)) return false;
+      if (!node || node.type !== 'PAIR') return false;
       const n = node.value;
-      return n == null || n instanceof _Scalar.default && n.value == null && !n.commentBefore && !n.comment && !n.tag;
+      return n == null || n instanceof _Scalar.Scalar && n.value == null && !n.commentBefore && !n.comment && !n.tag;
     });
   }
 
@@ -4775,10 +4743,11 @@ class Collection extends _Node.default {
   }, onComment, onChompKeep) {
     const {
       doc,
-      indent
+      indent,
+      indentStep
     } = ctx;
-    const inFlow = this.type && this.type.substr(0, 4) === 'FLOW' || ctx.inFlow;
-    if (inFlow) itemIndent += '  ';
+    const inFlow = this.type === _constants.Type.FLOW_MAP || this.type === _constants.Type.FLOW_SEQ || ctx.inFlow;
+    if (inFlow) itemIndent += indentStep;
     const allNullValues = isMap && this.hasAllNullValues();
     ctx = Object.assign({}, ctx, {
       allNullValues,
@@ -4810,7 +4779,7 @@ class Collection extends _Node.default {
       let str = doc.schema.stringify(item, ctx, () => comment = null, () => chompKeep = true);
       if (inFlow && !hasItemWithNewLine && str.includes('\n')) hasItemWithNewLine = true;
       if (inFlow && i < this.items.length - 1) str += ',';
-      str = (0, _addComment.default)(str, itemIndent, comment);
+      str = (0, _addComment.addComment)(str, itemIndent, comment);
       if (chompKeep && (comment || inFlow)) chompKeep = false;
       nodes.push({
         type: 'item',
@@ -4833,7 +4802,7 @@ class Collection extends _Node.default {
         str = start;
 
         for (const s of strings) {
-          str += s ? `\n  ${indent}${s}` : '\n';
+          str += s ? `\n${indentStep}${indent}${s}` : '\n';
         }
 
         str += `\n${indent}${end}`;
@@ -4857,7 +4826,7 @@ class Collection extends _Node.default {
 
 }
 
-exports.default = Collection;
+exports.Collection = Collection;
 
 _defineProperty(Collection, "maxFlowStringSingleLineLength", 60);
 
@@ -4869,31 +4838,26 @@ _defineProperty(Collection, "maxFlowStringSingleLineLength", 60);
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.MERGE_KEY = void 0;
+exports.Merge = exports.MERGE_KEY = void 0;
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Seq = __webpack_require__(29);
 
 const MERGE_KEY = '<<';
 exports.MERGE_KEY = MERGE_KEY;
 
-class Merge extends _Pair.default {
+class Merge extends _Pair.Pair {
   constructor(pair) {
-    if (pair instanceof _Pair.default) {
+    if (pair instanceof _Pair.Pair) {
       let seq = pair.value;
 
-      if (!(seq instanceof _Seq.default)) {
-        seq = new _Seq.default();
+      if (!(seq instanceof _Seq.YAMLSeq)) {
+        seq = new _Seq.YAMLSeq();
         seq.items.push(pair.value);
         seq.range = pair.value.range;
       }
@@ -4901,10 +4865,10 @@ class Merge extends _Pair.default {
       super(pair.key, seq);
       this.range = pair.range;
     } else {
-      super(new _Scalar.default(MERGE_KEY), new _Seq.default());
+      super(new _Scalar.Scalar(MERGE_KEY), new _Seq.YAMLSeq());
     }
 
-    this.type = 'MERGE_PAIR';
+    this.type = _Pair.Pair.Type.MERGE_PAIR;
   } // If the value associated with a merge key is a single mapping node, each of
   // its key/value pairs is inserted into the current mapping, unless the key
   // already exists in it. If the value associated with the merge key is a
@@ -4918,7 +4882,7 @@ class Merge extends _Pair.default {
     for (const {
       source
     } of this.value.items) {
-      if (!(source instanceof _Map.default)) throw new Error('Merge sources must be maps');
+      if (!(source instanceof _Map.YAMLMap)) throw new Error('Merge sources must be maps');
       const srcMap = source.toJSON(null, ctx, Map);
 
       for (const [key, value] of srcMap) {
@@ -4946,7 +4910,7 @@ class Merge extends _Pair.default {
 
 }
 
-exports.default = Merge;
+exports.Merge = Merge;
 
 /***/ }),
 
@@ -5753,22 +5717,17 @@ Glob.prototype._stat2 = function (f, abs, er, stat, cb) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.YAMLWarning = exports.YAMLSyntaxError = exports.YAMLSemanticError = exports.YAMLReferenceError = exports.YAMLError = void 0;
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
 var _sourceUtils = __webpack_require__(41);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Range = __webpack_require__(19);
 
 class YAMLError extends Error {
   constructor(name, source, message) {
-    if (!message || !(source instanceof _Node.default)) throw new Error(`Invalid arguments for new ${name}`);
+    if (!message || !(source instanceof _Node.Node)) throw new Error(`Invalid arguments for new ${name}`);
     super();
     this.name = name;
     this.message = message;
@@ -5781,7 +5740,7 @@ class YAMLError extends Error {
     const cst = this.source.context && this.source.context.root;
 
     if (typeof this.offset === 'number') {
-      this.range = new _Range.default(this.offset, this.offset + 1);
+      this.range = new _Range.Range(this.offset, this.offset + 1);
       const start = cst && (0, _sourceUtils.getLinePos)(this.offset, cst);
 
       if (start) {
@@ -5862,20 +5821,15 @@ exports.YAMLWarning = YAMLWarning;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.QuoteSingle = void 0;
 
 var _errors = __webpack_require__(405);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class QuoteSingle extends _Node.default {
+class QuoteSingle extends _Node.Node {
   static endOfQuote(src, offset) {
     let ch = src[offset];
 
@@ -5913,13 +5867,13 @@ class QuoteSingle extends _Node.default {
       const ch = src[i];
 
       if (ch === '\n') {
-        if (_Node.default.atDocumentBoundary(src, i + 1)) errors.push(new _errors.YAMLSemanticError(this, 'Document boundary indicators are not allowed within string values'));
+        if (_Node.Node.atDocumentBoundary(src, i + 1)) errors.push(new _errors.YAMLSemanticError(this, 'Document boundary indicators are not allowed within string values'));
 
         const {
           fold,
           offset,
           error
-        } = _Node.default.foldNewline(src, i, indent);
+        } = _Node.Node.foldNewline(src, i, indent);
 
         str += fold;
         i = offset;
@@ -5964,15 +5918,15 @@ class QuoteSingle extends _Node.default {
       src
     } = context;
     let offset = QuoteSingle.endOfQuote(src, start + 1);
-    this.valueRange = new _Range.default(start, offset);
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    this.valueRange = new _Range.Range(start, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     offset = this.parseComment(offset);
     return offset;
   }
 
 }
 
-exports.default = QuoteSingle;
+exports.QuoteSingle = QuoteSingle;
 
 /***/ }),
 
@@ -5982,9 +5936,6 @@ exports.default = QuoteSingle;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.timestamp = exports.floatTime = exports.intTime = void 0;
 
 var _stringify = __webpack_require__(454);
@@ -6082,10 +6033,7 @@ exports.timestamp = timestamp;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = foldFlowLines;
+exports.foldFlowLines = foldFlowLines;
 exports.FOLD_QUOTED = exports.FOLD_BLOCK = exports.FOLD_FLOW = void 0;
 const FOLD_FLOW = 'flow';
 exports.FOLD_FLOW = FOLD_FLOW;
@@ -6235,10 +6183,7 @@ function foldFlowLines(text, indent, mode, {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.strOptions = exports.nullOptions = exports.boolOptions = exports.binaryOptions = void 0;
+exports.strOptions = exports.nullOptions = exports.intOptions = exports.boolOptions = exports.binaryOptions = void 0;
 
 var _constants = __webpack_require__(49);
 
@@ -6252,6 +6197,10 @@ const boolOptions = {
   falseStr: 'false'
 };
 exports.boolOptions = boolOptions;
+const intOptions = {
+  asBigInt: false
+};
+exports.intOptions = intOptions;
 const nullOptions = {
   nullStr: 'null'
 };
@@ -6362,9 +6311,6 @@ function escapeProperty(s) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.stringifyNumber = stringifyNumber;
 exports.stringifyString = stringifyString;
 
@@ -6372,13 +6318,9 @@ var _addComment = __webpack_require__(836);
 
 var _constants = __webpack_require__(49);
 
-var _foldFlowLines = _interopRequireWildcard(__webpack_require__(415));
+var _foldFlowLines = __webpack_require__(415);
 
 var _options = __webpack_require__(422);
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 const getFoldOptions = ({
   indentAtStart
@@ -6392,6 +6334,7 @@ function stringifyNumber({
   tag,
   value
 }) {
+  if (typeof value === 'bigint') return String(value);
   if (!isFinite(value)) return isNaN(value) ? '.nan' : value < 0 ? '-.inf' : '.inf';
   let n = JSON.stringify(value);
 
@@ -6524,7 +6467,7 @@ function doubleQuotedString(value, ctx) {
   }
 
   str = start ? str + json.slice(start) : json;
-  return implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx));
+  return implicitKey ? str : (0, _foldFlowLines.foldFlowLines)(str, indent, _foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx));
 }
 
 function singleQuotedString(value, ctx) {
@@ -6541,7 +6484,7 @@ function singleQuotedString(value, ctx) {
   }
 
   const res = "'" + value.replace(/'/g, "''").replace(/\n+/g, `$&\n${indent}`) + "'";
-  return implicitKey ? res : (0, _foldFlowLines.default)(res, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
+  return implicitKey ? res : (0, _foldFlowLines.foldFlowLines)(res, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
 }
 
 function blockString({
@@ -6606,7 +6549,7 @@ function blockString({
   value = value.replace(/\n+/g, '\n$&').replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, '$1$2') // more-indented lines aren't folded
   //         ^ ind.line  ^ empty     ^ capture next empty lines only at end of indent
   .replace(/\n+/g, `$&${indent}`);
-  const body = (0, _foldFlowLines.default)(`${wsStart}${value}${wsEnd}`, indent, _foldFlowLines.FOLD_BLOCK, _options.strOptions.fold);
+  const body = (0, _foldFlowLines.foldFlowLines)(`${wsStart}${value}${wsEnd}`, indent, _foldFlowLines.FOLD_BLOCK, _options.strOptions.fold);
   return `${header}\n${indent}${body}`;
 }
 
@@ -6651,7 +6594,7 @@ function plainString(item, ctx, onComment, onChompKeep) {
     return doubleQuotedString(value, ctx);
   }
 
-  const body = implicitKey ? str : (0, _foldFlowLines.default)(str, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
+  const body = implicitKey ? str : (0, _foldFlowLines.foldFlowLines)(str, indent, _foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
 
   if (comment && !inFlow && (body.indexOf('\n') !== -1 || comment.indexOf('\n') !== -1)) {
     if (onComment) onComment();
@@ -6943,20 +6886,15 @@ exports.getState = getState;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Comment = void 0;
 
 var _constants = __webpack_require__(49);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class Comment extends _Node.default {
+class Comment extends _Node.Node {
   constructor() {
     super(_constants.Type.COMMENT);
   }
@@ -6972,13 +6910,13 @@ class Comment extends _Node.default {
   parse(context, start) {
     this.context = context;
     const offset = this.parseComment(start);
-    this.range = new _Range.default(start, offset);
+    this.range = new _Range.Range(start, offset);
     return offset;
   }
 
 }
 
-exports.default = Comment;
+exports.Comment = Comment;
 
 /***/ }),
 
@@ -6988,28 +6926,23 @@ exports.default = Comment;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Anchors = void 0;
 
-var _Alias = _interopRequireDefault(__webpack_require__(637));
+var _Alias = __webpack_require__(637);
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Merge = _interopRequireDefault(__webpack_require__(386));
+var _Merge = __webpack_require__(386);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Seq = __webpack_require__(29);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class Anchors {
   static validAnchorNode(node) {
-    return node instanceof _Scalar.default || node instanceof _Seq.default || node instanceof _Map.default;
+    return node instanceof _Scalar.Scalar || node instanceof _Seq.YAMLSeq || node instanceof _Map.YAMLMap;
   }
 
   constructor(prefix) {
@@ -7020,15 +6953,15 @@ class Anchors {
 
   createAlias(node, name) {
     this.setAnchor(node, name);
-    return new _Alias.default(node);
+    return new _Alias.Alias(node);
   }
 
   createMergePair(...sources) {
-    const merge = new _Merge.default();
+    const merge = new _Merge.Merge();
     merge.value.items = sources.map(s => {
-      if (s instanceof _Alias.default) {
-        if (s.source instanceof _Map.default) return s;
-      } else if (s instanceof _Map.default) {
+      if (s instanceof _Alias.Alias) {
+        if (s.source instanceof _Map.YAMLMap) return s;
+      } else if (s instanceof _Map.YAMLMap) {
         return this.createAlias(s);
       }
 
@@ -7110,7 +7043,7 @@ class Anchors {
 
 }
 
-exports.default = Anchors;
+exports.Anchors = Anchors;
 
 /***/ }),
 
@@ -7120,26 +7053,21 @@ exports.default = Anchors;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Scalar = void 0;
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
+var _toJSON = __webpack_require__(923);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Node = __webpack_require__(156);
 
 // Published as 'yaml/scalar'
-class Scalar extends _Node.default {
+class Scalar extends _Node.Node {
   constructor(value) {
     super();
     this.value = value;
   }
 
   toJSON(arg, ctx) {
-    return ctx && ctx.keep ? this.value : (0, _toJSON.default)(this.value, arg, ctx);
+    return ctx && ctx.keep ? this.value : (0, _toJSON.toJSON)(this.value, arg, ctx);
   }
 
   toString() {
@@ -7148,14 +7076,14 @@ class Scalar extends _Node.default {
 
 }
 
-exports.default = Scalar;
+exports.Scalar = Scalar;
 
 /***/ }),
 
 /***/ 521:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = __webpack_require__(792).default
+module.exports = __webpack_require__(792).YAML
 
 
 /***/ }),
@@ -7166,38 +7094,75 @@ module.exports = __webpack_require__(792).default
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.yaml11 = void 0;
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
 var _stringify = __webpack_require__(454);
 
-var _failsafe = _interopRequireDefault(__webpack_require__(195));
+var _failsafe = __webpack_require__(195);
 
 var _options = __webpack_require__(422);
 
-var _binary = _interopRequireDefault(__webpack_require__(996));
+var _binary = __webpack_require__(996);
 
-var _omap = _interopRequireDefault(__webpack_require__(821));
+var _omap = __webpack_require__(821);
 
-var _pairs = _interopRequireDefault(__webpack_require__(566));
+var _pairs = __webpack_require__(566);
 
-var _set = _interopRequireDefault(__webpack_require__(785));
+var _set = __webpack_require__(785);
 
 var _timestamp = __webpack_require__(414);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
+/* global BigInt */
 const boolStringify = ({
   value
 }) => value ? _options.boolOptions.trueStr : _options.boolOptions.falseStr;
 
-var _default = _failsafe.default.concat([{
+const intIdentify = value => typeof value === 'bigint' || Number.isInteger(value);
+
+function intResolve(sign, src, radix) {
+  let str = src.replace(/_/g, '');
+
+  if (_options.intOptions.asBigInt) {
+    switch (radix) {
+      case 2:
+        str = `0b${str}`;
+        break;
+
+      case 8:
+        str = `0o${str}`;
+        break;
+
+      case 16:
+        str = `0x${str}`;
+        break;
+    }
+
+    const n = BigInt(str);
+    return sign === '-' ? BigInt(-1) * n : n;
+  }
+
+  const n = parseInt(str, radix);
+  return sign === '-' ? -1 * n : n;
+}
+
+function intStringify(node, radix, prefix) {
+  const {
+    value
+  } = node;
+
+  if (intIdentify(value)) {
+    const str = value.toString(radix);
+    return value < 0 ? '-' + prefix + str.substr(1) : prefix + str;
+  }
+
+  return (0, _stringify.stringifyNumber)(node);
+}
+
+const yaml11 = _failsafe.failsafe.concat([{
   identify: value => value == null,
-  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.default(null) : null,
+  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.Scalar(null) : null,
   default: true,
   tag: 'tag:yaml.org,2002:null',
   test: /^(?:~|[Nn]ull|NULL)?$/,
@@ -7221,42 +7186,36 @@ var _default = _failsafe.default.concat([{
   options: _options.boolOptions,
   stringify: boolStringify
 }, {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'BIN',
-  test: /^0b([0-1_]+)$/,
-  resolve: (str, bin) => parseInt(bin.replace(/_/g, ''), 2),
-  stringify: ({
-    value
-  }) => '0b' + value.toString(2)
+  test: /^([-+]?)0b([0-1_]+)$/,
+  resolve: (str, sign, bin) => intResolve(sign, bin, 2),
+  stringify: node => intStringify(node, 2, '0b')
 }, {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'OCT',
-  test: /^[-+]?0([0-7_]+)$/,
-  resolve: (str, oct) => parseInt(oct.replace(/_/g, ''), 8),
-  stringify: ({
-    value
-  }) => (value < 0 ? '-0' : '0') + value.toString(8)
+  test: /^([-+]?)0([0-7_]+)$/,
+  resolve: (str, sign, oct) => intResolve(sign, oct, 8),
+  stringify: node => intStringify(node, 8, '0')
 }, {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
-  test: /^[-+]?[0-9][0-9_]*$/,
-  resolve: str => parseInt(str.replace(/_/g, ''), 10),
+  test: /^([-+]?)([0-9][0-9_]*)$/,
+  resolve: (str, sign, abs) => intResolve(sign, abs, 10),
   stringify: _stringify.stringifyNumber
 }, {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'HEX',
-  test: /^0x([0-9a-fA-F_]+)$/,
-  resolve: (str, hex) => parseInt(hex.replace(/_/g, ''), 16),
-  stringify: ({
-    value
-  }) => (value < 0 ? '-0x' : '0x') + value.toString(16)
+  test: /^([-+]?)0x([0-9a-fA-F_]+)$/,
+  resolve: (str, sign, hex) => intResolve(sign, hex, 16),
+  stringify: node => intStringify(node, 16, '0x')
 }, {
   identify: value => typeof value === 'number',
   default: true,
@@ -7281,7 +7240,7 @@ var _default = _failsafe.default.concat([{
   test: /^[-+]?(?:[0-9][0-9_]*)?\.([0-9_]*)$/,
 
   resolve(str, frac) {
-    const node = new _Scalar.default(parseFloat(str.replace(/_/g, '')));
+    const node = new _Scalar.Scalar(parseFloat(str.replace(/_/g, '')));
 
     if (frac) {
       const f = frac.replace(/_/g, '');
@@ -7292,9 +7251,9 @@ var _default = _failsafe.default.concat([{
   },
 
   stringify: _stringify.stringifyNumber
-}], _binary.default, _omap.default, _pairs.default, _set.default, _timestamp.intTime, _timestamp.floatTime, _timestamp.timestamp);
+}], _binary.binary, _omap.omap, _pairs.pairs, _set.set, _timestamp.intTime, _timestamp.floatTime, _timestamp.timestamp);
 
-exports.default = _default;
+exports.yaml11 = yaml11;
 
 /***/ }),
 
@@ -7304,49 +7263,44 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.parsePairs = parsePairs;
 exports.createPairs = createPairs;
-exports.default = void 0;
+exports.pairs = void 0;
 
 var _errors = __webpack_require__(405);
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _parseSeq = _interopRequireDefault(__webpack_require__(858));
+var _parseSeq = __webpack_require__(858);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Seq = __webpack_require__(29);
 
 function parsePairs(doc, cst) {
-  const seq = (0, _parseSeq.default)(doc, cst);
+  const seq = (0, _parseSeq.parseSeq)(doc, cst);
 
   for (let i = 0; i < seq.items.length; ++i) {
     let item = seq.items[i];
-    if (item instanceof _Pair.default) continue;else if (item instanceof _Map.default) {
+    if (item instanceof _Pair.Pair) continue;else if (item instanceof _Map.YAMLMap) {
       if (item.items.length > 1) {
         const msg = 'Each pair must have its own sequence indicator';
         throw new _errors.YAMLSemanticError(cst, msg);
       }
 
-      const pair = item.items[0] || new _Pair.default();
+      const pair = item.items[0] || new _Pair.Pair();
       if (item.commentBefore) pair.commentBefore = pair.commentBefore ? `${item.commentBefore}\n${pair.commentBefore}` : item.commentBefore;
       if (item.comment) pair.comment = pair.comment ? `${item.comment}\n${pair.comment}` : item.comment;
       item = pair;
     }
-    seq.items[i] = item instanceof _Pair.default ? item : new _Pair.default(item);
+    seq.items[i] = item instanceof _Pair.Pair ? item : new _Pair.Pair(item);
   }
 
   return seq;
 }
 
 function createPairs(schema, iterable, ctx) {
-  const pairs = new _Seq.default(schema);
+  const pairs = new _Seq.YAMLSeq(schema);
   pairs.tag = 'tag:yaml.org,2002:pairs';
 
   for (const it of iterable) {
@@ -7375,13 +7329,13 @@ function createPairs(schema, iterable, ctx) {
   return pairs;
 }
 
-var _default = {
+const pairs = {
   default: false,
   tag: 'tag:yaml.org,2002:pairs',
   resolve: parsePairs,
   createNode: createPairs
 };
-exports.default = _default;
+exports.pairs = pairs;
 
 /***/ }),
 
@@ -7758,38 +7712,29 @@ rimraf.sync = rimrafSync
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Document = void 0;
 
-var _addComment = _interopRequireDefault(__webpack_require__(836));
+var _addComment = __webpack_require__(836);
 
-var _Anchors = _interopRequireDefault(__webpack_require__(514));
+var _Anchors = __webpack_require__(514);
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _listTagNames = _interopRequireDefault(__webpack_require__(880));
+var _listTagNames = __webpack_require__(880);
 
-var _schema = _interopRequireDefault(__webpack_require__(255));
+var _schema = __webpack_require__(255);
 
-var _Alias = _interopRequireDefault(__webpack_require__(637));
+var _Alias = __webpack_require__(637);
 
-var _Collection = _interopRequireWildcard(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
+var _Node = __webpack_require__(156);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _toJSON = __webpack_require__(923);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -7797,7 +7742,7 @@ const isCollectionItem = node => node && [_constants.Type.MAP_KEY, _constants.Ty
 
 class Document {
   constructor(options) {
-    this.anchors = new _Anchors.default(options.anchorPrefix);
+    this.anchors = new _Anchors.Anchors(options.anchorPrefix);
     this.commentBefore = null;
     this.comment = null;
     this.contents = null;
@@ -7811,7 +7756,7 @@ class Document {
   }
 
   assertCollectionContents() {
-    if (this.contents instanceof _Collection.default) return true;
+    if (this.contents instanceof _Collection.Collection) return true;
     throw new Error('Expected a YAML collection as document contents');
   }
 
@@ -7846,21 +7791,21 @@ class Document {
   }
 
   get(key, keepScalar) {
-    return this.contents instanceof _Collection.default ? this.contents.get(key, keepScalar) : undefined;
+    return this.contents instanceof _Collection.Collection ? this.contents.get(key, keepScalar) : undefined;
   }
 
   getIn(path, keepScalar) {
-    if ((0, _Collection.isEmptyPath)(path)) return !keepScalar && this.contents instanceof _Scalar.default ? this.contents.value : this.contents;
-    return this.contents instanceof _Collection.default ? this.contents.getIn(path, keepScalar) : undefined;
+    if ((0, _Collection.isEmptyPath)(path)) return !keepScalar && this.contents instanceof _Scalar.Scalar ? this.contents.value : this.contents;
+    return this.contents instanceof _Collection.Collection ? this.contents.getIn(path, keepScalar) : undefined;
   }
 
   has(key) {
-    return this.contents instanceof _Collection.default ? this.contents.has(key) : false;
+    return this.contents instanceof _Collection.Collection ? this.contents.has(key) : false;
   }
 
   hasIn(path) {
     if ((0, _Collection.isEmptyPath)(path)) return this.contents !== undefined;
-    return this.contents instanceof _Collection.default ? this.contents.hasIn(path) : false;
+    return this.contents instanceof _Collection.Collection ? this.contents.hasIn(path) : false;
   }
 
   set(key, value) {
@@ -7888,7 +7833,7 @@ class Document {
 
     if (Array.isArray(customTags)) this.options.customTags = customTags;
     const opt = Object.assign({}, this.getDefaults(), this.options);
-    this.schema = new _schema.default(opt);
+    this.schema = new _schema.Schema(opt);
   }
 
   parse(node, prevDoc) {
@@ -8021,7 +7966,7 @@ class Document {
           const cb = comments.before.join('\n') || null;
 
           if (cb) {
-            const cbNode = this.contents instanceof _Collection.default && this.contents.items[0] ? this.contents.items[0] : this.contents;
+            const cbNode = this.contents instanceof _Collection.Collection && this.contents.items[0] ? this.contents.items[0] : this.contents;
             cbNode.commentBefore = cbNode.commentBefore ? `${cb}\n${cbNode.commentBefore}` : cb;
           }
         } else {
@@ -8142,18 +8087,18 @@ class Document {
       case _constants.Type.BLOCK_LITERAL:
       case _constants.Type.QUOTE_DOUBLE:
       case _constants.Type.QUOTE_SINGLE:
-        return _schema.default.defaultTags.STR;
+        return _schema.Schema.defaultTags.STR;
 
       case _constants.Type.FLOW_MAP:
       case _constants.Type.MAP:
-        return _schema.default.defaultTags.MAP;
+        return _schema.Schema.defaultTags.MAP;
 
       case _constants.Type.FLOW_SEQ:
       case _constants.Type.SEQ:
-        return _schema.default.defaultTags.SEQ;
+        return _schema.Schema.defaultTags.SEQ;
 
       case _constants.Type.PLAIN:
-        return nonSpecific ? _schema.default.defaultTags.STR : null;
+        return nonSpecific ? _schema.Schema.defaultTags.STR : null;
 
       default:
         return null;
@@ -8251,7 +8196,7 @@ class Document {
       } // Lazy resolution for circular references
 
 
-      res = new _Alias.default(src);
+      res = new _Alias.Alias(src);
 
       anchors._cstAliases.push(res);
     } else {
@@ -8294,7 +8239,7 @@ class Document {
   }
 
   listNonDefaultTags() {
-    return (0, _listTagNames.default)(this.contents).filter(t => t.indexOf(_schema.default.defaultPrefix) !== 0);
+    return (0, _listTagNames.listTagNames)(this.contents).filter(t => t.indexOf(_schema.Schema.defaultPrefix) !== 0);
   }
 
   setTagPrefix(handle, prefix) {
@@ -8338,31 +8283,43 @@ class Document {
     }
   }
 
-  toJSON(arg) {
+  toJSON(arg, onAnchor) {
     const {
       keepBlobsInJSON,
       mapAsMap,
       maxAliasCount
     } = this.options;
-    const keep = keepBlobsInJSON && (typeof arg !== 'string' || !(this.contents instanceof _Scalar.default));
+    const keep = keepBlobsInJSON && (typeof arg !== 'string' || !(this.contents instanceof _Scalar.Scalar));
     const ctx = {
       doc: this,
+      indentStep: '  ',
       keep,
       mapAsMap: keep && !!mapAsMap,
       maxAliasCount
     };
     const anchorNames = Object.keys(this.anchors.map);
-    if (anchorNames.length > 0) ctx.anchors = anchorNames.map(name => ({
+    if (anchorNames.length > 0) ctx.anchors = new Map(anchorNames.map(name => [this.anchors.map[name], {
       alias: [],
       aliasCount: 0,
-      count: 1,
-      node: this.anchors.map[name]
-    }));
-    return (0, _toJSON.default)(this.contents, arg, ctx);
+      count: 1
+    }]));
+    const res = (0, _toJSON.toJSON)(this.contents, arg, ctx);
+    if (typeof onAnchor === 'function' && ctx.anchors) for (const {
+      count,
+      res
+    } of ctx.anchors.values()) onAnchor(res, count);
+    return res;
   }
 
   toString() {
     if (this.errors.length > 0) throw new Error('Document with errors cannot be stringified');
+    const indentSize = this.options.indent;
+
+    if (!Number.isInteger(indentSize) || indentSize <= 0) {
+      const s = JSON.stringify(indentSize);
+      throw new Error(`"indent" option must be a positive integer, not ${s}`);
+    }
+
     this.setSchema();
     const lines = [];
     let hasDirectives = false;
@@ -8398,13 +8355,14 @@ class Document {
     const ctx = {
       anchors: {},
       doc: this,
-      indent: ''
+      indent: '',
+      indentStep: ' '.repeat(indentSize)
     };
     let chompKeep = false;
     let contentComment = null;
 
     if (this.contents) {
-      if (this.contents instanceof _Node.default) {
+      if (this.contents instanceof _Node.Node) {
         if (this.contents.spaceBefore && (hasDirectives || this.directivesEndMarker)) lines.push('');
         if (this.contents.commentBefore) lines.push(this.contents.commentBefore.replace(/^/gm, '#')); // top-level block scalars need to be indented if followed by a comment
 
@@ -8414,7 +8372,7 @@ class Document {
 
       const onChompKeep = contentComment ? null : () => chompKeep = true;
       const body = this.schema.stringify(this.contents, ctx, () => contentComment = null, onChompKeep);
-      lines.push((0, _addComment.default)(body, '', contentComment));
+      lines.push((0, _addComment.addComment)(body, '', contentComment));
     } else if (this.contents !== undefined) {
       lines.push(this.schema.stringify(this.contents, ctx));
     }
@@ -8429,7 +8387,7 @@ class Document {
 
 }
 
-exports.default = Document;
+exports.Document = Document;
 
 _defineProperty(Document, "defaults", {
   '1.0': {
@@ -8437,7 +8395,7 @@ _defineProperty(Document, "defaults", {
     merge: true,
     tagPrefixes: [{
       handle: '!',
-      prefix: _schema.default.defaultPrefix
+      prefix: _schema.Schema.defaultPrefix
     }, {
       handle: '!!',
       prefix: 'tag:private.yaml.org,2002:'
@@ -8451,7 +8409,7 @@ _defineProperty(Document, "defaults", {
       prefix: '!'
     }, {
       handle: '!!',
-      prefix: _schema.default.defaultPrefix
+      prefix: _schema.Schema.defaultPrefix
     }]
   },
   '1.2': {
@@ -8462,7 +8420,7 @@ _defineProperty(Document, "defaults", {
       prefix: '!'
     }, {
       handle: '!!',
-      prefix: _schema.default.defaultPrefix
+      prefix: _schema.Schema.defaultPrefix
     }]
   }
 });
@@ -8475,10 +8433,7 @@ _defineProperty(Document, "defaults", {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.resolveString = void 0;
+exports.string = exports.resolveString = void 0;
 
 var _stringify = __webpack_require__(454);
 
@@ -8497,7 +8452,7 @@ const resolveString = (doc, node) => {
 };
 
 exports.resolveString = resolveString;
-var _default = {
+const string = {
   identify: value => typeof value === 'string',
   default: true,
   tag: 'tag:yaml.org,2002:str',
@@ -8512,7 +8467,7 @@ var _default = {
 
   options: _options.strOptions
 };
-exports.default = _default;
+exports.string = string;
 
 /***/ }),
 
@@ -8603,32 +8558,27 @@ module.exports = require("path");
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Alias = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
+var _toJSON = __webpack_require__(923);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
+var _Node = __webpack_require__(156);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Pair = __webpack_require__(740);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 const getAliasCount = (node, anchors) => {
   if (node instanceof Alias) {
-    const anchor = anchors.find(a => a.node === node.source);
+    const anchor = anchors.get(node.source);
     return anchor.count * anchor.aliasCount;
-  } else if (node instanceof _Collection.default) {
+  } else if (node instanceof _Collection.Collection) {
     let count = 0;
 
     for (const item of node.items) {
@@ -8637,7 +8587,7 @@ const getAliasCount = (node, anchors) => {
     }
 
     return count;
-  } else if (node instanceof _Pair.default) {
+  } else if (node instanceof _Pair.Pair) {
     const kc = getAliasCount(node.key, anchors);
     const vc = getAliasCount(node.value, anchors);
     return Math.max(kc, vc);
@@ -8646,7 +8596,7 @@ const getAliasCount = (node, anchors) => {
   return 1;
 };
 
-class Alias extends _Node.default {
+class Alias extends _Node.Node {
   static stringify({
     range,
     source
@@ -8674,12 +8624,12 @@ class Alias extends _Node.default {
   }
 
   toJSON(arg, ctx) {
-    if (!ctx) return (0, _toJSON.default)(this.source, arg, ctx);
+    if (!ctx) return (0, _toJSON.toJSON)(this.source, arg, ctx);
     const {
       anchors,
       maxAliasCount
     } = ctx;
-    const anchor = anchors.find(a => a.node === this.source);
+    const anchor = anchors.get(this.source);
     /* istanbul ignore if */
 
     if (!anchor || anchor.res === undefined) {
@@ -8708,7 +8658,7 @@ class Alias extends _Node.default {
 
 }
 
-exports.default = Alias;
+exports.Alias = Alias;
 
 _defineProperty(Alias, "default", true);
 
@@ -8720,20 +8670,15 @@ _defineProperty(Alias, "default", true);
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Directive = void 0;
 
 var _constants = __webpack_require__(49);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class Directive extends _Node.default {
+class Directive extends _Node.Node {
   constructor() {
     super(_constants.Type.DIRECTIVE);
     this.name = null;
@@ -8766,7 +8711,7 @@ class Directive extends _Node.default {
 
     while (ch && ch !== '\n' && ch !== '#') ch = src[offset += 1];
 
-    this.valueRange = new _Range.default(start, offset);
+    this.valueRange = new _Range.Range(start, offset);
     return offset;
   }
 
@@ -8775,13 +8720,13 @@ class Directive extends _Node.default {
     let offset = this.parseName(start + 1);
     offset = this.parseParameters(offset);
     offset = this.parseComment(offset);
-    this.range = new _Range.default(start, offset);
+    this.range = new _Range.Range(start, offset);
     return offset;
   }
 
 }
 
-exports.default = Directive;
+exports.Directive = Directive;
 
 /***/ }),
 
@@ -9336,25 +9281,20 @@ module.exports.win32 = win32;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.findPair = findPair;
-exports.default = void 0;
+exports.YAMLMap = void 0;
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Scalar = __webpack_require__(515);
 
 function findPair(items, key) {
-  const k = key instanceof _Scalar.default ? key.value : key;
+  const k = key instanceof _Scalar.Scalar ? key.value : key;
 
   for (const it of items) {
-    if (it instanceof _Pair.default) {
+    if (it instanceof _Pair.Pair) {
       if (it.key === key || it.key === k) return it;
       if (it.key && it.key.value === k) return it;
     }
@@ -9363,9 +9303,9 @@ function findPair(items, key) {
   return undefined;
 }
 
-class YAMLMap extends _Collection.default {
+class YAMLMap extends _Collection.Collection {
   add(pair, overwrite) {
-    if (!pair) pair = new _Pair.default(pair);else if (!(pair instanceof _Pair.default)) pair = new _Pair.default(pair.key || pair, pair.value);
+    if (!pair) pair = new _Pair.Pair(pair);else if (!(pair instanceof _Pair.Pair)) pair = new _Pair.Pair(pair.key || pair, pair.value);
     const prev = findPair(this.items, pair.key);
     const sortEntries = this.schema && this.schema.sortMapEntries;
 
@@ -9389,7 +9329,7 @@ class YAMLMap extends _Collection.default {
   get(key, keepScalar) {
     const it = findPair(this.items, key);
     const node = it && it.value;
-    return !keepScalar && node instanceof _Scalar.default ? node.value : node;
+    return !keepScalar && node instanceof _Scalar.Scalar ? node.value : node;
   }
 
   has(key) {
@@ -9397,7 +9337,7 @@ class YAMLMap extends _Collection.default {
   }
 
   set(key, value) {
-    this.add(new _Pair.default(key, value), true);
+    this.add(new _Pair.Pair(key, value), true);
   }
   /**
    * @param {*} arg ignored
@@ -9420,7 +9360,7 @@ class YAMLMap extends _Collection.default {
     if (!ctx) return JSON.stringify(this);
 
     for (const item of this.items) {
-      if (!(item instanceof _Pair.default)) throw new Error(`Map items must all be pairs; found ${JSON.stringify(item)} instead`);
+      if (!(item instanceof _Pair.Pair)) throw new Error(`Map items must all be pairs; found ${JSON.stringify(item)} instead`);
     }
 
     return super.toString(ctx, {
@@ -9436,7 +9376,7 @@ class YAMLMap extends _Collection.default {
 
 }
 
-exports.default = YAMLMap;
+exports.YAMLMap = YAMLMap;
 
 /***/ }),
 
@@ -9462,20 +9402,15 @@ try {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.QuoteDouble = void 0;
 
 var _errors = __webpack_require__(405);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class QuoteDouble extends _Node.default {
+class QuoteDouble extends _Node.Node {
   static endOfQuote(src, offset) {
     let ch = src[offset];
 
@@ -9511,13 +9446,13 @@ class QuoteDouble extends _Node.default {
       const ch = src[i];
 
       if (ch === '\n') {
-        if (_Node.default.atDocumentBoundary(src, i + 1)) errors.push(new _errors.YAMLSemanticError(this, 'Document boundary indicators are not allowed within string values'));
+        if (_Node.Node.atDocumentBoundary(src, i + 1)) errors.push(new _errors.YAMLSemanticError(this, 'Document boundary indicators are not allowed within string values'));
 
         const {
           fold,
           offset,
           error
-        } = _Node.default.foldNewline(src, i, indent);
+        } = _Node.Node.foldNewline(src, i, indent);
 
         str += fold;
         i = offset;
@@ -9688,15 +9623,15 @@ class QuoteDouble extends _Node.default {
       src
     } = context;
     let offset = QuoteDouble.endOfQuote(src, start + 1);
-    this.valueRange = new _Range.default(start, offset);
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    this.valueRange = new _Range.Range(start, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     offset = this.parseComment(offset);
     return offset;
   }
 
 }
 
-exports.default = QuoteDouble;
+exports.QuoteDouble = QuoteDouble;
 
 /***/ }),
 
@@ -9706,19 +9641,14 @@ exports.default = QuoteDouble;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.map = void 0;
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _parseMap = _interopRequireDefault(__webpack_require__(763));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _parseMap = __webpack_require__(763);
 
 function createMap(schema, obj, ctx) {
-  const map = new _Map.default(schema);
+  const map = new _Map.YAMLMap(schema);
 
   if (obj instanceof Map) {
     for (const [key, value] of obj) map.items.push(schema.createPair(key, value, ctx));
@@ -9733,14 +9663,14 @@ function createMap(schema, obj, ctx) {
   return map;
 }
 
-var _default = {
+const map = {
   createNode: createMap,
   default: true,
-  nodeClass: _Map.default,
+  nodeClass: _Map.YAMLMap,
   tag: 'tag:yaml.org,2002:map',
-  resolve: _parseMap.default
+  resolve: _parseMap.parseMap
 };
-exports.default = _default;
+exports.map = map;
 
 /***/ }),
 
@@ -9750,9 +9680,6 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.checkFlowCollectionEnd = checkFlowCollectionEnd;
 exports.checkKeyLength = checkKeyLength;
 exports.resolveComments = resolveComments;
@@ -9861,45 +9788,44 @@ function resolveComments(collection, comments) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Pair = void 0;
 
-var _addComment = _interopRequireDefault(__webpack_require__(836));
+var _addComment = __webpack_require__(836);
 
 var _constants = __webpack_require__(49);
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
+var _toJSON = __webpack_require__(923);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Node = _interopRequireDefault(__webpack_require__(156));
+var _Node = __webpack_require__(156);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Seq = __webpack_require__(29);
 
-// Published as 'yaml/pair'
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 const stringifyKey = (key, jsKey, ctx) => {
   if (jsKey === null) return '';
   if (typeof jsKey !== 'object') return String(jsKey);
-  if (key instanceof _Node.default && ctx && ctx.doc) return key.toString({
+  if (key instanceof _Node.Node && ctx && ctx.doc) return key.toString({
     anchors: {},
     doc: ctx.doc,
     indent: '',
+    indentStep: ctx.indentStep,
     inFlow: true,
     inStringifyKey: true
   });
   return JSON.stringify(jsKey);
 };
 
-class Pair extends _Node.default {
+class Pair extends _Node.Node {
   constructor(key, value = null) {
     super();
     this.key = key;
     this.value = value;
-    this.type = 'PAIR';
+    this.type = Pair.Type.PAIR;
   }
 
   get commentBefore() {
@@ -9907,21 +9833,21 @@ class Pair extends _Node.default {
   }
 
   set commentBefore(cb) {
-    if (this.key == null) this.key = new _Scalar.default(null);
+    if (this.key == null) this.key = new _Scalar.Scalar(null);
     this.key.commentBefore = cb;
   }
 
   addToJSMap(ctx, map) {
-    const key = (0, _toJSON.default)(this.key, '', ctx);
+    const key = (0, _toJSON.toJSON)(this.key, '', ctx);
 
     if (map instanceof Map) {
-      const value = (0, _toJSON.default)(this.value, key, ctx);
+      const value = (0, _toJSON.toJSON)(this.value, key, ctx);
       map.set(key, value);
     } else if (map instanceof Set) {
       map.add(key);
     } else {
       const stringKey = stringifyKey(this.key, key, ctx);
-      map[stringKey] = (0, _toJSON.default)(this.value, stringKey, ctx);
+      map[stringKey] = (0, _toJSON.toJSON)(this.value, stringKey, ctx);
     }
 
     return map;
@@ -9935,41 +9861,44 @@ class Pair extends _Node.default {
   toString(ctx, onComment, onChompKeep) {
     if (!ctx || !ctx.doc) return JSON.stringify(this);
     const {
+      indent: indentSize,
+      indentSeq,
       simpleKeys
     } = ctx.doc.options;
     let {
       key,
       value
     } = this;
-    let keyComment = key instanceof _Node.default && key.comment;
+    let keyComment = key instanceof _Node.Node && key.comment;
 
     if (simpleKeys) {
       if (keyComment) {
         throw new Error('With simple keys, key nodes cannot have comments');
       }
 
-      if (key instanceof _Collection.default) {
+      if (key instanceof _Collection.Collection) {
         const msg = 'With simple keys, collection cannot be used as a key value';
         throw new Error(msg);
       }
     }
 
-    const explicitKey = !simpleKeys && (!key || keyComment || key instanceof _Collection.default || key.type === _constants.Type.BLOCK_FOLDED || key.type === _constants.Type.BLOCK_LITERAL);
+    const explicitKey = !simpleKeys && (!key || keyComment || key instanceof _Collection.Collection || key.type === _constants.Type.BLOCK_FOLDED || key.type === _constants.Type.BLOCK_LITERAL);
     const {
       doc,
-      indent
+      indent,
+      indentStep
     } = ctx;
     ctx = Object.assign({}, ctx, {
       implicitKey: !explicitKey,
-      indent: indent + '  '
+      indent: indent + indentStep
     });
     let chompKeep = false;
     let str = doc.schema.stringify(key, ctx, () => keyComment = null, () => chompKeep = true);
-    str = (0, _addComment.default)(str, ctx.indent, keyComment);
+    str = (0, _addComment.addComment)(str, ctx.indent, keyComment);
 
     if (ctx.allNullValues && !simpleKeys) {
       if (this.comment) {
-        str = (0, _addComment.default)(str, ctx.indent, this.comment);
+        str = (0, _addComment.addComment)(str, ctx.indent, this.comment);
         if (onComment) onComment();
       } else if (chompKeep && !keyComment && onChompKeep) onChompKeep();
 
@@ -9980,14 +9909,14 @@ class Pair extends _Node.default {
 
     if (this.comment) {
       // expected (but not strictly required) to be a single-line comment
-      str = (0, _addComment.default)(str, ctx.indent, this.comment);
+      str = (0, _addComment.addComment)(str, ctx.indent, this.comment);
       if (onComment) onComment();
     }
 
     let vcb = '';
     let valueComment = null;
 
-    if (value instanceof _Node.default) {
+    if (value instanceof _Node.Node) {
       if (value.spaceBefore) vcb = '\n';
 
       if (value.commentBefore) {
@@ -10001,25 +9930,36 @@ class Pair extends _Node.default {
     }
 
     ctx.implicitKey = false;
-    if (!explicitKey && !this.comment && value instanceof _Scalar.default) ctx.indentAtStart = str.length + 1;
+    if (!explicitKey && !this.comment && value instanceof _Scalar.Scalar) ctx.indentAtStart = str.length + 1;
     chompKeep = false;
+
+    if (!indentSeq && indentSize >= 2 && !ctx.inFlow && !explicitKey && value instanceof _Seq.YAMLSeq && value.type !== _constants.Type.FLOW_SEQ && !value.tag && !doc.anchors.getName(value)) {
+      // If indentSeq === false, consider '- ' as part of indentation where possible
+      ctx.indent = ctx.indent.substr(2);
+    }
+
     const valueStr = doc.schema.stringify(value, ctx, () => valueComment = null, () => chompKeep = true);
     let ws = ' ';
 
     if (vcb || this.comment) {
       ws = `${vcb}\n${ctx.indent}`;
-    } else if (!explicitKey && value instanceof _Collection.default) {
+    } else if (!explicitKey && value instanceof _Collection.Collection) {
       const flow = valueStr[0] === '[' || valueStr[0] === '{';
       if (!flow || valueStr.includes('\n')) ws = `\n${ctx.indent}`;
     }
 
     if (chompKeep && !valueComment && onChompKeep) onChompKeep();
-    return (0, _addComment.default)(str + ws + valueStr, ctx.indent, valueComment);
+    return (0, _addComment.addComment)(str + ws + valueStr, ctx.indent, valueComment);
   }
 
 }
 
-exports.default = Pair;
+exports.Pair = Pair;
+
+_defineProperty(Pair, "Type", {
+  PAIR: 'PAIR',
+  MERGE_PAIR: 'MERGE_PAIR'
+});
 
 /***/ }),
 
@@ -10036,34 +9976,25 @@ module.exports = require("fs");
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = parseMap;
+exports.parseMap = parseMap;
 
 var _constants = __webpack_require__(49);
 
-var _PlainValue = _interopRequireDefault(__webpack_require__(119));
+var _PlainValue = __webpack_require__(119);
 
 var _errors = __webpack_require__(405);
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Merge = _interopRequireWildcard(__webpack_require__(386));
+var _Merge = __webpack_require__(386);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
 var _parseUtils = __webpack_require__(734);
 
-var _Alias = _interopRequireDefault(__webpack_require__(637));
+var _Alias = __webpack_require__(637);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Collection = __webpack_require__(380);
 
 function parseMap(doc, cst) {
   if (cst.type !== _constants.Type.MAP && cst.type !== _constants.Type.FLOW_MAP) {
@@ -10076,7 +10007,7 @@ function parseMap(doc, cst) {
     comments,
     items
   } = cst.type === _constants.Type.FLOW_MAP ? resolveFlowMapItems(doc, cst) : resolveBlockMapItems(doc, cst);
-  const map = new _Map.default();
+  const map = new _Map.YAMLMap();
   map.items = items;
   (0, _parseUtils.resolveComments)(map, comments);
   let hasCollectionKey = false;
@@ -10085,14 +10016,14 @@ function parseMap(doc, cst) {
     const {
       key: iKey
     } = items[i];
-    if (iKey instanceof _Collection.default) hasCollectionKey = true;
+    if (iKey instanceof _Collection.Collection) hasCollectionKey = true;
 
     if (doc.schema.merge && iKey && iKey.value === _Merge.MERGE_KEY) {
-      items[i] = new _Merge.default(items[i]);
+      items[i] = new _Merge.Merge(items[i]);
       const sources = items[i].value.items;
       let error = null;
       sources.some(node => {
-        if (node instanceof _Alias.default) {
+        if (node instanceof _Alias.Alias) {
           // During parsing, alias sources are CST nodes; to account for
           // circular references their resolved values can't be used here.
           const {
@@ -10196,7 +10127,7 @@ function resolveBlockMapItems(doc, cst) {
         break;
 
       case _constants.Type.MAP_KEY:
-        if (key !== undefined) items.push(new _Pair.default(key));
+        if (key !== undefined) items.push(new _Pair.Pair(key));
         if (item.error) doc.errors.push(item.error);
         key = doc.resolveNode(item.node);
         keyStart = null;
@@ -10218,7 +10149,7 @@ function resolveBlockMapItems(doc, cst) {
             // Comments on an empty mapping value need to be preserved, so we
             // need to construct a minimal empty node here to use instead of the
             // missing `item.node`. -- eemeli/yaml#19
-            valueNode = new _PlainValue.default(_constants.Type.PLAIN, []);
+            valueNode = new _PlainValue.PlainValue(_constants.Type.PLAIN, []);
             valueNode.context = {
               parent: item,
               src: item.context.src
@@ -10240,7 +10171,7 @@ function resolveBlockMapItems(doc, cst) {
             }
           }
 
-          const pair = new _Pair.default(key, doc.resolveNode(valueNode));
+          const pair = new _Pair.Pair(key, doc.resolveNode(valueNode));
           resolvePairComment(item, pair);
           items.push(pair);
           (0, _parseUtils.checkKeyLength)(doc.errors, cst, i, key, keyStart);
@@ -10250,7 +10181,7 @@ function resolveBlockMapItems(doc, cst) {
         break;
 
       default:
-        if (key !== undefined) items.push(new _Pair.default(key));
+        if (key !== undefined) items.push(new _Pair.Pair(key));
         key = doc.resolveNode(item);
         keyStart = item.range.start;
         if (item.error) doc.errors.push(item.error);
@@ -10280,7 +10211,7 @@ function resolveBlockMapItems(doc, cst) {
     }
   }
 
-  if (key !== undefined) items.push(new _Pair.default(key));
+  if (key !== undefined) items.push(new _Pair.Pair(key));
   return {
     comments,
     items
@@ -10325,7 +10256,7 @@ function resolveFlowMapItems(doc, cst) {
         }
 
         if (key !== undefined) {
-          items.push(new _Pair.default(key));
+          items.push(new _Pair.Pair(key));
           key = undefined;
           keyStart = null;
 
@@ -10364,14 +10295,14 @@ function resolveFlowMapItems(doc, cst) {
       keyStart = explicitKey ? null : item.range.start; // TODO: add error for non-explicit multiline plain key
     } else {
       if (next !== ',') doc.errors.push(new _errors.YAMLSemanticError(item, 'Indicator : missing in flow map entry'));
-      items.push(new _Pair.default(key, doc.resolveNode(item)));
+      items.push(new _Pair.Pair(key, doc.resolveNode(item)));
       key = undefined;
       explicitKey = false;
     }
   }
 
   (0, _parseUtils.checkFlowCollectionEnd)(doc.errors, cst);
-  if (key !== undefined) items.push(new _Pair.default(key));
+  if (key !== undefined) items.push(new _Pair.Pair(key));
   return {
     comments,
     items
@@ -10386,19 +10317,14 @@ function resolveFlowMapItems(doc, cst) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.seq = void 0;
 
-var _parseSeq = _interopRequireDefault(__webpack_require__(858));
+var _parseSeq = __webpack_require__(858);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Seq = __webpack_require__(29);
 
 function createSeq(schema, obj, ctx) {
-  const seq = new _Seq.default(schema);
+  const seq = new _Seq.YAMLSeq(schema);
 
   if (obj && obj[Symbol.iterator]) {
     for (const it of obj) {
@@ -10410,14 +10336,14 @@ function createSeq(schema, obj, ctx) {
   return seq;
 }
 
-var _default = {
+const seq = {
   createNode: createSeq,
   default: true,
-  nodeClass: _Seq.default,
+  nodeClass: _Seq.YAMLSeq,
   tag: 'tag:yaml.org,2002:seq',
-  resolve: _parseSeq.default
+  resolve: _parseSeq.parseSeq
 };
-exports.default = _default;
+exports.seq = seq;
 
 /***/ }),
 
@@ -10427,24 +10353,32 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.floatObj = exports.expObj = exports.nanObj = exports.hexObj = exports.intObj = exports.octObj = exports.boolObj = exports.nullObj = void 0;
+exports.core = exports.floatObj = exports.expObj = exports.nanObj = exports.hexObj = exports.intObj = exports.octObj = exports.boolObj = exports.nullObj = void 0;
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
 var _stringify = __webpack_require__(454);
 
-var _failsafe = _interopRequireDefault(__webpack_require__(195));
+var _failsafe = __webpack_require__(195);
 
 var _options = __webpack_require__(422);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+/* global BigInt */
+const intIdentify = value => typeof value === 'bigint' || Number.isInteger(value);
+
+const intResolve = (src, part, radix) => _options.intOptions.asBigInt ? BigInt(src) : parseInt(part, radix);
+
+function intStringify(node, radix, prefix) {
+  const {
+    value
+  } = node;
+  if (intIdentify(value) && value >= 0) return prefix + value.toString(radix);
+  return (0, _stringify.stringifyNumber)(node);
+}
 
 const nullObj = {
   identify: value => value == null,
-  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.default(null) : null,
+  createNode: (schema, value, ctx) => ctx.wrapScalars ? new _Scalar.Scalar(null) : null,
   default: true,
   tag: 'tag:yaml.org,2002:null',
   test: /^(?:~|[Nn]ull|NULL)?$/,
@@ -10466,36 +10400,35 @@ const boolObj = {
 };
 exports.boolObj = boolObj;
 const octObj = {
-  identify: value => typeof value === 'number',
+  identify: value => intIdentify(value) && value >= 0,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'OCT',
   test: /^0o([0-7]+)$/,
-  resolve: (str, oct) => parseInt(oct, 8),
-  stringify: ({
-    value
-  }) => '0o' + value.toString(8)
+  resolve: (str, oct) => intResolve(str, oct, 8),
+  options: _options.intOptions,
+  stringify: node => intStringify(node, 8, '0o')
 };
 exports.octObj = octObj;
 const intObj = {
-  identify: value => typeof value === 'number',
+  identify: intIdentify,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   test: /^[-+]?[0-9]+$/,
-  resolve: str => parseInt(str, 10),
+  resolve: str => intResolve(str, str, 10),
+  options: _options.intOptions,
   stringify: _stringify.stringifyNumber
 };
 exports.intObj = intObj;
 const hexObj = {
-  identify: value => typeof value === 'number',
+  identify: value => intIdentify(value) && value >= 0,
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'HEX',
   test: /^0x([0-9a-fA-F]+)$/,
-  resolve: (str, hex) => parseInt(hex, 16),
-  stringify: ({
-    value
-  }) => '0x' + value.toString(16)
+  resolve: (str, hex) => intResolve(str, hex, 16),
+  options: _options.intOptions,
+  stringify: node => intStringify(node, 16, '0x')
 };
 exports.hexObj = hexObj;
 const nanObj = {
@@ -10527,7 +10460,7 @@ const floatObj = {
 
   resolve(str, frac1, frac2) {
     const frac = frac1 || frac2;
-    const node = new _Scalar.default(parseFloat(str));
+    const node = new _Scalar.Scalar(parseFloat(str));
     if (frac && frac[frac.length - 1] === '0') node.minFractionDigits = frac.length;
     return node;
   },
@@ -10536,9 +10469,9 @@ const floatObj = {
 };
 exports.floatObj = floatObj;
 
-var _default = _failsafe.default.concat([nullObj, boolObj, octObj, intObj, hexObj, nanObj, expObj, floatObj]);
+const core = _failsafe.failsafe.concat([nullObj, boolObj, octObj, intObj, hexObj, nanObj, expObj, floatObj]);
 
-exports.default = _default;
+exports.core = core;
 
 /***/ }),
 
@@ -10548,44 +10481,35 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.YAMLSet = void 0;
+exports.set = exports.YAMLSet = void 0;
 
 var _errors = __webpack_require__(405);
 
-var _Map = _interopRequireWildcard(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _parseMap = _interopRequireDefault(__webpack_require__(763));
+var _parseMap = __webpack_require__(763);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+var _Scalar = __webpack_require__(515);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-class YAMLSet extends _Map.default {
+class YAMLSet extends _Map.YAMLMap {
   constructor() {
     super();
     this.tag = YAMLSet.tag;
   }
 
   add(key) {
-    const pair = key instanceof _Pair.default ? key : new _Pair.default(key);
+    const pair = key instanceof _Pair.Pair ? key : new _Pair.Pair(key);
     const prev = (0, _Map.findPair)(this.items, pair.key);
     if (!prev) this.items.push(pair);
   }
 
   get(key, keepPair) {
     const pair = (0, _Map.findPair)(this.items, key);
-    return !keepPair && pair instanceof _Pair.default ? pair.key instanceof _Scalar.default ? pair.key.value : pair.key : pair;
+    return !keepPair && pair instanceof _Pair.Pair ? pair.key instanceof _Scalar.Scalar ? pair.key.value : pair.key : pair;
   }
 
   set(key, value) {
@@ -10595,7 +10519,7 @@ class YAMLSet extends _Map.default {
     if (prev && !value) {
       this.items.splice(this.items.indexOf(prev), 1);
     } else if (!prev && value) {
-      this.items.push(new _Pair.default(key));
+      this.items.push(new _Pair.Pair(key));
     }
   }
 
@@ -10615,7 +10539,7 @@ exports.YAMLSet = YAMLSet;
 _defineProperty(YAMLSet, "tag", 'tag:yaml.org,2002:set');
 
 function parseSet(doc, cst) {
-  const map = (0, _parseMap.default)(doc, cst);
+  const map = (0, _parseMap.parseMap)(doc, cst);
   if (!map.hasAllNullValues()) throw new _errors.YAMLSemanticError(cst, 'Set items must all have null values');
   return Object.assign(new YAMLSet(), map);
 }
@@ -10628,7 +10552,7 @@ function createSet(schema, iterable, ctx) {
   return set;
 }
 
-var _default = {
+const set = {
   identify: value => value instanceof Set,
   nodeClass: YAMLSet,
   default: false,
@@ -10636,7 +10560,7 @@ var _default = {
   resolve: parseSet,
   createNode: createSet
 };
-exports.default = _default;
+exports.set = set;
 
 /***/ }),
 
@@ -10646,26 +10570,25 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.YAML = void 0;
 
-var _parse = _interopRequireDefault(__webpack_require__(309));
+var _parse = __webpack_require__(309);
 
-var _Document = _interopRequireDefault(__webpack_require__(570));
+var _Document = __webpack_require__(570);
 
 var _errors = __webpack_require__(405);
 
-var _schema = _interopRequireDefault(__webpack_require__(255));
+var _schema = __webpack_require__(255);
+
+var _options = __webpack_require__(422);
 
 var _warnings = __webpack_require__(847);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const defaultOptions = {
   anchorPrefix: 'a',
   customTags: null,
+  indent: 2,
+  indentSeq: true,
   keepCstNodes: false,
   keepNodeTypes: true,
   keepBlobsInJSON: true,
@@ -10676,6 +10599,48 @@ const defaultOptions = {
   simpleKeys: false,
   version: '1.2'
 };
+const scalarOptions = {
+  get binary() {
+    return _options.binaryOptions;
+  },
+
+  set binary(opt) {
+    Object.assign(_options.binaryOptions, opt);
+  },
+
+  get bool() {
+    return _options.boolOptions;
+  },
+
+  set bool(opt) {
+    Object.assign(_options.boolOptions, opt);
+  },
+
+  get int() {
+    return _options.intOptions;
+  },
+
+  set int(opt) {
+    Object.assign(_options.intOptions, opt);
+  },
+
+  get null() {
+    return _options.nullOptions;
+  },
+
+  set null(opt) {
+    Object.assign(_options.nullOptions, opt);
+  },
+
+  get str() {
+    return _options.strOptions;
+  },
+
+  set str(opt) {
+    Object.assign(_options.strOptions, opt);
+  }
+
+};
 
 function createNode(value, wrapScalars = true, tag) {
   if (tag === undefined && typeof wrapScalars === 'string') {
@@ -10683,12 +10648,12 @@ function createNode(value, wrapScalars = true, tag) {
     wrapScalars = true;
   }
 
-  const options = Object.assign({}, _Document.default.defaults[defaultOptions.version], defaultOptions);
-  const schema = new _schema.default(options);
+  const options = Object.assign({}, _Document.Document.defaults[defaultOptions.version], defaultOptions);
+  const schema = new _schema.Schema(options);
   return schema.createNode(value, wrapScalars, tag);
 }
 
-class Document extends _Document.default {
+class Document extends _Document.Document {
   constructor(options) {
     super(Object.assign({}, defaultOptions, options));
   }
@@ -10699,7 +10664,7 @@ function parseAllDocuments(src, options) {
   const stream = [];
   let prev;
 
-  for (const cstDoc of (0, _parse.default)(src)) {
+  for (const cstDoc of (0, _parse.parse)(src)) {
     const doc = new Document(options);
     doc.parse(cstDoc, prev);
     stream.push(doc);
@@ -10710,7 +10675,7 @@ function parseAllDocuments(src, options) {
 }
 
 function parseDocument(src, options) {
-  const cst = (0, _parse.default)(src);
+  const cst = (0, _parse.parse)(src);
   const doc = new Document(options).parse(cst[0]);
 
   if (cst.length > 1) {
@@ -10734,17 +10699,18 @@ function stringify(value, options) {
   return String(doc);
 }
 
-var _default = {
+const YAML = {
   createNode,
   defaultOptions,
   Document,
   parse,
   parseAllDocuments,
-  parseCST: _parse.default,
+  parseCST: _parse.parse,
   parseDocument,
+  scalarOptions,
   stringify
 };
-exports.default = _default;
+exports.YAML = YAML;
 
 /***/ }),
 
@@ -10754,20 +10720,15 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.BlankLine = void 0;
 
 var _constants = __webpack_require__(49);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class BlankLine extends _Node.default {
+class BlankLine extends _Node.Node {
   constructor() {
     super(_constants.Type.BLANK_LINE);
   }
@@ -10780,7 +10741,7 @@ class BlankLine extends _Node.default {
     return true;
   }
   /**
-   * Parses blank lines from the source
+   * Parses a blank line from the source
    *
    * @param {ParseContext} context
    * @param {number} start - Index of first \n character
@@ -10790,24 +10751,13 @@ class BlankLine extends _Node.default {
 
   parse(context, start) {
     this.context = context;
-    const {
-      src
-    } = context;
-    let offset = start + 1;
-
-    while (_Node.default.atBlank(src, offset)) {
-      const lineEnd = _Node.default.endOfWhiteSpace(src, offset);
-
-      if (lineEnd === '\n') offset = lineEnd + 1;else break;
-    }
-
-    this.range = new _Range.default(start, offset);
-    return offset;
+    this.range = new _Range.Range(start, start + 1);
+    return start + 1;
   }
 
 }
 
-exports.default = BlankLine;
+exports.BlankLine = BlankLine;
 
 /***/ }),
 
@@ -10817,42 +10767,37 @@ exports.default = BlankLine;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.YAMLOMap = void 0;
+exports.omap = exports.YAMLOMap = void 0;
 
 var _errors = __webpack_require__(405);
 
-var _toJSON = _interopRequireDefault(__webpack_require__(923));
+var _toJSON = __webpack_require__(923);
 
-var _Map = _interopRequireDefault(__webpack_require__(684));
+var _Map = __webpack_require__(684);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
+var _Scalar = __webpack_require__(515);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
+var _Seq = __webpack_require__(29);
 
 var _pairs = __webpack_require__(566);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-class YAMLOMap extends _Seq.default {
+class YAMLOMap extends _Seq.YAMLSeq {
   constructor() {
     super();
 
-    _defineProperty(this, "add", _Map.default.prototype.add.bind(this));
+    _defineProperty(this, "add", _Map.YAMLMap.prototype.add.bind(this));
 
-    _defineProperty(this, "delete", _Map.default.prototype.delete.bind(this));
+    _defineProperty(this, "delete", _Map.YAMLMap.prototype.delete.bind(this));
 
-    _defineProperty(this, "get", _Map.default.prototype.get.bind(this));
+    _defineProperty(this, "get", _Map.YAMLMap.prototype.get.bind(this));
 
-    _defineProperty(this, "has", _Map.default.prototype.has.bind(this));
+    _defineProperty(this, "has", _Map.YAMLMap.prototype.has.bind(this));
 
-    _defineProperty(this, "set", _Map.default.prototype.set.bind(this));
+    _defineProperty(this, "set", _Map.YAMLMap.prototype.set.bind(this));
 
     this.tag = YAMLOMap.tag;
   }
@@ -10864,11 +10809,11 @@ class YAMLOMap extends _Seq.default {
     for (const pair of this.items) {
       let key, value;
 
-      if (pair instanceof _Pair.default) {
-        key = (0, _toJSON.default)(pair.key, '', ctx);
-        value = (0, _toJSON.default)(pair.value, key, ctx);
+      if (pair instanceof _Pair.Pair) {
+        key = (0, _toJSON.toJSON)(pair.key, '', ctx);
+        value = (0, _toJSON.toJSON)(pair.value, key, ctx);
       } else {
-        key = (0, _toJSON.default)(pair, '', ctx);
+        key = (0, _toJSON.toJSON)(pair, '', ctx);
       }
 
       if (map.has(key)) throw new Error('Ordered maps must not include duplicate keys');
@@ -10891,7 +10836,7 @@ function parseOMap(doc, cst) {
   for (const {
     key
   } of pairs.items) {
-    if (key instanceof _Scalar.default) {
+    if (key instanceof _Scalar.Scalar) {
       if (seenKeys.includes(key.value)) {
         const msg = 'Ordered maps must not include duplicate keys';
         throw new _errors.YAMLSemanticError(cst, msg);
@@ -10911,7 +10856,7 @@ function createOMap(schema, iterable, ctx) {
   return omap;
 }
 
-var _default = {
+const omap = {
   identify: value => value instanceof Map,
   nodeClass: YAMLOMap,
   default: false,
@@ -10919,7 +10864,7 @@ var _default = {
   resolve: parseOMap,
   createNode: createOMap
 };
-exports.default = _default;
+exports.omap = omap;
 
 /***/ }),
 
@@ -10929,11 +10874,8 @@ exports.default = _default;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.addCommentBefore = addCommentBefore;
-exports.default = addComment;
+exports.addComment = addComment;
 
 function addCommentBefore(str, indent, comment) {
   if (!comment) return str;
@@ -10953,42 +10895,51 @@ function addComment(str, indent, comment) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.warn = warn;
 exports.warnFileDeprecation = warnFileDeprecation;
 exports.warnOptionDeprecation = warnOptionDeprecation;
 
-/* global global, console */
-function warn(warning, type) {
-  if (global && global._YAML_SILENCE_WARNINGS) return;
-  const {
-    emitWarning
-  } = global && global.process; // This will throw in Jest if `warning` is an Error instance due to
-  // https://github.com/facebook/jest/issues/2549
+/* global console, process, YAML_SILENCE_DEPRECATION_WARNINGS, YAML_SILENCE_WARNINGS */
+function shouldWarn(deprecation) {
+  const env = typeof process !== 'undefined' && process.env || {};
 
-  if (emitWarning) emitWarning(warning, type);else {
-    // eslint-disable-next-line no-console
-    console.warn(type ? `${type}: ${warning}` : warning);
+  if (deprecation) {
+    if (typeof YAML_SILENCE_DEPRECATION_WARNINGS !== 'undefined') return !YAML_SILENCE_DEPRECATION_WARNINGS;
+    return !env.YAML_SILENCE_DEPRECATION_WARNINGS;
+  }
+
+  if (typeof YAML_SILENCE_WARNINGS !== 'undefined') return !YAML_SILENCE_WARNINGS;
+  return !env.YAML_SILENCE_WARNINGS;
+}
+
+function warn(warning, type) {
+  if (shouldWarn(false)) {
+    const emit = typeof process !== 'undefined' && process.emitWarning; // This will throw in Jest if `warning` is an Error instance due to
+    // https://github.com/facebook/jest/issues/2549
+
+    if (emit) emit(warning, type);else {
+      // eslint-disable-next-line no-console
+      console.warn(type ? `${type}: ${warning}` : warning);
+    }
   }
 }
 
 function warnFileDeprecation(filename) {
-  if (global && global._YAML_SILENCE_DEPRECATION_WARNINGS) return;
-  const path = filename.replace(/.*yaml[/\\]/i, '').replace(/\.js$/, '').replace(/\\/g, '/');
-  warn(`The endpoint 'yaml/${path}' will be removed in a future release.`, 'DeprecationWarning');
+  if (shouldWarn(true)) {
+    const path = filename.replace(/.*yaml[/\\]/i, '').replace(/\.js$/, '').replace(/\\/g, '/');
+    warn(`The endpoint 'yaml/${path}' will be removed in a future release.`, 'DeprecationWarning');
+  }
 }
 
 const warned = {};
 
 function warnOptionDeprecation(name, alternative) {
-  if (global && global._YAML_SILENCE_DEPRECATION_WARNINGS) return;
-  if (warned[name]) return;
-  warned[name] = true;
-  let msg = `The option '${name}' will be removed in a future release`;
-  msg += alternative ? `, use '${alternative}' instead.` : '.';
-  warn(msg, 'DeprecationWarning');
+  if (!warned[name] && shouldWarn(true)) {
+    warned[name] = true;
+    let msg = `The option '${name}' will be removed in a future release`;
+    msg += alternative ? `, use '${alternative}' instead.` : '.';
+    warn(msg, 'DeprecationWarning');
+  }
 }
 
 /***/ }),
@@ -10999,18 +10950,13 @@ function warnOptionDeprecation(name, alternative) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Alias = void 0;
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class Alias extends _Node.default {
+class Alias extends _Node.Node {
   /**
    * Parses an *alias from the source
    *
@@ -11024,17 +10970,17 @@ class Alias extends _Node.default {
       src
     } = context;
 
-    let offset = _Node.default.endOfIdentifier(src, start + 1);
+    let offset = _Node.Node.endOfIdentifier(src, start + 1);
 
-    this.valueRange = new _Range.default(start + 1, offset);
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    this.valueRange = new _Range.Range(start + 1, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     offset = this.parseComment(offset);
     return offset;
   }
 
 }
 
-exports.default = Alias;
+exports.Alias = Alias;
 
 /***/ }),
 
@@ -11044,24 +10990,19 @@ exports.default = Alias;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = parseSeq;
+exports.parseSeq = parseSeq;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
 var _parseUtils = __webpack_require__(734);
 
-var _Seq = _interopRequireDefault(__webpack_require__(29));
+var _Seq = __webpack_require__(29);
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Collection = __webpack_require__(380);
 
 function parseSeq(doc, cst) {
   if (cst.type !== _constants.Type.SEQ && cst.type !== _constants.Type.FLOW_SEQ) {
@@ -11074,11 +11015,11 @@ function parseSeq(doc, cst) {
     comments,
     items
   } = cst.type === _constants.Type.FLOW_SEQ ? resolveFlowSeqItems(doc, cst) : resolveBlockSeqItems(doc, cst);
-  const seq = new _Seq.default();
+  const seq = new _Seq.YAMLSeq();
   seq.items = items;
   (0, _parseUtils.resolveComments)(seq, comments);
 
-  if (!doc.options.mapAsMap && items.some(it => it instanceof _Pair.default && it.key instanceof _Collection.default)) {
+  if (!doc.options.mapAsMap && items.some(it => it instanceof _Pair.Pair && it.key instanceof _Collection.Collection)) {
     const warn = 'Keys with collection values will be stringified as YAML due to JS Object restrictions. Use mapAsMap: true to avoid this.';
     doc.warnings.push(new _errors.YAMLWarning(cst, warn));
   }
@@ -11150,7 +11091,7 @@ function resolveFlowSeqItems(doc, cst) {
 
       if (char !== ':' && (explicitKey || key !== undefined)) {
         if (explicitKey && key === undefined) key = next ? items.pop() : null;
-        items.push(new _Pair.default(key));
+        items.push(new _Pair.Pair(key));
         explicitKey = false;
         key = undefined;
         keyStart = null;
@@ -11164,7 +11105,7 @@ function resolveFlowSeqItems(doc, cst) {
         if (next === ',') {
           key = items.pop();
 
-          if (key instanceof _Pair.default) {
+          if (key instanceof _Pair.Pair) {
             const msg = 'Chaining flow sequence pairs is invalid';
             const err = new _errors.YAMLSemanticError(cst, msg);
             err.offset = offset;
@@ -11206,7 +11147,7 @@ function resolveFlowSeqItems(doc, cst) {
       if (key === undefined) {
         items.push(value);
       } else {
-        items.push(new _Pair.default(key, value));
+        items.push(new _Pair.Pair(key, value));
         key = undefined;
       }
 
@@ -11216,7 +11157,7 @@ function resolveFlowSeqItems(doc, cst) {
   }
 
   (0, _parseUtils.checkFlowCollectionEnd)(doc.errors, cst);
-  if (key !== undefined) items.push(new _Pair.default(key));
+  if (key !== undefined) items.push(new _Pair.Pair(key));
   return {
     comments,
     items
@@ -11231,18 +11172,13 @@ function resolveFlowSeqItems(doc, cst) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.listTagNames = void 0;
 
-var _Collection = _interopRequireDefault(__webpack_require__(380));
+var _Collection = __webpack_require__(380);
 
-var _Pair = _interopRequireDefault(__webpack_require__(740));
+var _Pair = __webpack_require__(740);
 
-var _Scalar = _interopRequireDefault(__webpack_require__(515));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Scalar = __webpack_require__(515);
 
 const visit = (node, tags) => {
   if (node && typeof node === 'object') {
@@ -11250,13 +11186,13 @@ const visit = (node, tags) => {
       tag
     } = node;
 
-    if (node instanceof _Collection.default) {
+    if (node instanceof _Collection.Collection) {
       if (tag) tags[tag] = true;
       node.items.forEach(n => visit(n, tags));
-    } else if (node instanceof _Pair.default) {
+    } else if (node instanceof _Pair.Pair) {
       visit(node.key, tags);
       visit(node.value, tags);
-    } else if (node instanceof _Scalar.default) {
+    } else if (node instanceof _Scalar.Scalar) {
       if (tag) tags[tag] = true;
     }
   }
@@ -11264,9 +11200,9 @@ const visit = (node, tags) => {
   return tags;
 };
 
-var _default = node => Object.keys(visit(node, {}));
+const listTagNames = node => Object.keys(visit(node, {}));
 
-exports.default = _default;
+exports.listTagNames = listTagNames;
 
 /***/ }),
 
@@ -11296,24 +11232,19 @@ var isArray = Array.isArray || function (xs) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.CollectionItem = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _BlankLine = _interopRequireDefault(__webpack_require__(794));
+var _BlankLine = __webpack_require__(794);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class CollectionItem extends _Node.default {
+class CollectionItem extends _Node.Node {
   constructor(type, props) {
     super(type, props);
     this.node = null;
@@ -11342,7 +11273,7 @@ class CollectionItem extends _Node.default {
     if (!atLineStart && this.type === _constants.Type.SEQ_ITEM) this.error = new _errors.YAMLSemanticError(this, 'Sequence items must not have preceding content on the same line');
     const indent = atLineStart ? start - lineStart : context.indent;
 
-    let offset = _Node.default.endOfWhiteSpace(src, start + 1);
+    let offset = _Node.Node.endOfWhiteSpace(src, start + 1);
 
     let ch = src[offset];
     const inlineComment = ch === '#';
@@ -11351,30 +11282,30 @@ class CollectionItem extends _Node.default {
 
     while (ch === '\n' || ch === '#') {
       if (ch === '#') {
-        const end = _Node.default.endOfLine(src, offset + 1);
+        const end = _Node.Node.endOfLine(src, offset + 1);
 
-        comments.push(new _Range.default(offset, end));
+        comments.push(new _Range.Range(offset, end));
         offset = end;
       } else {
         atLineStart = true;
         lineStart = offset + 1;
 
-        const wsEnd = _Node.default.endOfWhiteSpace(src, lineStart);
+        const wsEnd = _Node.Node.endOfWhiteSpace(src, lineStart);
 
         if (src[wsEnd] === '\n' && comments.length === 0) {
-          blankLine = new _BlankLine.default();
+          blankLine = new _BlankLine.BlankLine();
           lineStart = blankLine.parse({
             src
           }, lineStart);
         }
 
-        offset = _Node.default.endOfIndent(src, lineStart);
+        offset = _Node.Node.endOfIndent(src, lineStart);
       }
 
       ch = src[offset];
     }
 
-    if (_Node.default.nextNodeIsIndented(ch, offset - (lineStart + indent), this.type !== _constants.Type.SEQ_ITEM)) {
+    if (_Node.Node.nextNodeIsIndented(ch, offset - (lineStart + indent), this.type !== _constants.Type.SEQ_ITEM)) {
       this.node = parseNode({
         atLineStart,
         inCollection: false,
@@ -11403,12 +11334,12 @@ class CollectionItem extends _Node.default {
         this.props.push(c);
         offset = c.end;
       } else {
-        offset = _Node.default.endOfLine(src, start + 1);
+        offset = _Node.Node.endOfLine(src, start + 1);
       }
     }
 
     const end = this.node ? this.node.valueRange.end : offset;
-    this.valueRange = new _Range.default(start, end);
+    this.valueRange = new _Range.Range(start, end);
     return offset;
   }
 
@@ -11428,12 +11359,12 @@ class CollectionItem extends _Node.default {
     } = this;
     if (value != null) return value;
     const str = node ? src.slice(range.start, node.range.start) + String(node) : src.slice(range.start, range.end);
-    return _Node.default.addStringTerminator(src, range.end, str);
+    return _Node.Node.addStringTerminator(src, range.end, str);
   }
 
 }
 
-exports.default = CollectionItem;
+exports.CollectionItem = CollectionItem;
 
 /***/ }),
 
@@ -11443,16 +11374,13 @@ exports.default = CollectionItem;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = toJSON;
+exports.toJSON = toJSON;
 
 function toJSON(value, arg, ctx) {
   if (Array.isArray(value)) return value.map((v, i) => toJSON(v, String(i), ctx));
 
   if (value && typeof value.toJSON === 'function') {
-    const anchor = ctx && ctx.anchors && ctx.anchors.find(a => a.node === value);
+    const anchor = ctx && ctx.anchors && ctx.anchors.get(value);
     if (anchor) ctx.onCreate = res => {
       anchor.res = res;
       delete ctx.onCreate;
@@ -11462,6 +11390,7 @@ function toJSON(value, arg, ctx) {
     return res;
   }
 
+  if ((!ctx || !ctx.keep) && typeof value === 'bigint') return Number(value);
   return value;
 }
 
@@ -11473,32 +11402,27 @@ function toJSON(value, arg, ctx) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Document = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _BlankLine = _interopRequireDefault(__webpack_require__(794));
+var _BlankLine = __webpack_require__(794);
 
 var _Collection = __webpack_require__(954);
 
-var _Comment = _interopRequireDefault(__webpack_require__(487));
+var _Comment = __webpack_require__(487);
 
-var _Directive = _interopRequireDefault(__webpack_require__(641));
+var _Directive = __webpack_require__(641);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
+var _Range = __webpack_require__(19);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class Document extends _Node.default {
+class Document extends _Node.Node {
   static startCommentOrEndBlankLine(src, start) {
-    const offset = _Node.default.endOfWhiteSpace(src, start);
+    const offset = _Node.Node.endOfWhiteSpace(src, start);
 
     const ch = src[offset];
     return ch === '#' || ch === '\n' ? offset : start;
@@ -11521,13 +11445,13 @@ class Document extends _Node.default {
     let hasDirectives = false;
     let offset = start;
 
-    while (!_Node.default.atDocumentBoundary(src, offset, _constants.Char.DIRECTIVES_END)) {
+    while (!_Node.Node.atDocumentBoundary(src, offset, _constants.Char.DIRECTIVES_END)) {
       offset = Document.startCommentOrEndBlankLine(src, offset);
 
       switch (src[offset]) {
         case '\n':
           if (atLineStart) {
-            const blankLine = new _BlankLine.default();
+            const blankLine = new _BlankLine.BlankLine();
             offset = blankLine.parse({
               src
             }, offset);
@@ -11544,7 +11468,7 @@ class Document extends _Node.default {
 
         case '#':
           {
-            const comment = new _Comment.default();
+            const comment = new _Comment.Comment();
             offset = comment.parse({
               src
             }, offset);
@@ -11555,7 +11479,7 @@ class Document extends _Node.default {
 
         case '%':
           {
-            const directive = new _Directive.default();
+            const directive = new _Directive.Directive();
             offset = directive.parse({
               parent: this,
               src
@@ -11579,7 +11503,7 @@ class Document extends _Node.default {
     }
 
     if (src[offset]) {
-      this.directivesEndMarker = new _Range.default(offset, offset + 3);
+      this.directivesEndMarker = new _Range.Range(offset, offset + 3);
       return offset + 3;
     }
 
@@ -11603,16 +11527,16 @@ class Document extends _Node.default {
 
     while (src[lineStart - 1] === '-') lineStart -= 1;
 
-    let offset = _Node.default.endOfWhiteSpace(src, start);
+    let offset = _Node.Node.endOfWhiteSpace(src, start);
 
     let atLineStart = lineStart === start;
-    this.valueRange = new _Range.default(offset);
+    this.valueRange = new _Range.Range(offset);
 
-    while (!_Node.default.atDocumentBoundary(src, offset, _constants.Char.DOCUMENT_END)) {
+    while (!_Node.Node.atDocumentBoundary(src, offset, _constants.Char.DOCUMENT_END)) {
       switch (src[offset]) {
         case '\n':
           if (atLineStart) {
-            const blankLine = new _BlankLine.default();
+            const blankLine = new _BlankLine.BlankLine();
             offset = blankLine.parse({
               src
             }, offset);
@@ -11630,7 +11554,7 @@ class Document extends _Node.default {
 
         case '#':
           {
-            const comment = new _Comment.default();
+            const comment = new _Comment.Comment();
             offset = comment.parse({
               src
             }, offset);
@@ -11641,7 +11565,7 @@ class Document extends _Node.default {
 
         default:
           {
-            const iEnd = _Node.default.endOfIndent(src, offset);
+            const iEnd = _Node.Node.endOfIndent(src, offset);
 
             const context = {
               atLineStart,
@@ -11668,14 +11592,14 @@ class Document extends _Node.default {
     this.valueRange.end = offset;
 
     if (src[offset]) {
-      this.documentEndMarker = new _Range.default(offset, offset + 3);
+      this.documentEndMarker = new _Range.Range(offset, offset + 3);
       offset += 3;
 
       if (src[offset]) {
-        offset = _Node.default.endOfWhiteSpace(src, offset);
+        offset = _Node.Node.endOfWhiteSpace(src, offset);
 
         if (src[offset] === '#') {
-          const comment = new _Comment.default();
+          const comment = new _Comment.Comment();
           offset = comment.parse({
             src
           }, offset);
@@ -11751,7 +11675,7 @@ class Document extends _Node.default {
 
 }
 
-exports.default = Document;
+exports.Document = Document;
 
 /***/ }),
 
@@ -11761,30 +11685,25 @@ exports.default = Document;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.grabCollectionEndComments = grabCollectionEndComments;
-exports.default = void 0;
+exports.Collection = void 0;
 
 var _constants = __webpack_require__(49);
 
-var _BlankLine = _interopRequireDefault(__webpack_require__(794));
+var _BlankLine = __webpack_require__(794);
 
-var _CollectionItem = _interopRequireDefault(__webpack_require__(906));
+var _CollectionItem = __webpack_require__(906);
 
-var _Comment = _interopRequireDefault(__webpack_require__(487));
+var _Comment = __webpack_require__(487);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Range = __webpack_require__(19);
 
 function grabCollectionEndComments(node) {
   let cnode = node;
 
-  while (cnode instanceof _CollectionItem.default) cnode = cnode.node;
+  while (cnode instanceof _CollectionItem.CollectionItem) cnode = cnode.node;
 
   if (!(cnode instanceof Collection)) return null;
   const len = cnode.items.length;
@@ -11818,10 +11737,10 @@ function grabCollectionEndComments(node) {
   return ca;
 }
 
-class Collection extends _Node.default {
+class Collection extends _Node.Node {
   static nextContentHasIndent(src, offset, indent) {
-    const lineStart = _Node.default.endOfLine(src, offset) + 1;
-    offset = _Node.default.endOfWhiteSpace(src, lineStart);
+    const lineStart = _Node.Node.endOfLine(src, offset) + 1;
+    offset = _Node.Node.endOfWhiteSpace(src, lineStart);
     const ch = src[offset];
     if (!ch) return false;
     if (offset >= lineStart + indent) return true;
@@ -11866,24 +11785,24 @@ class Collection extends _Node.default {
     } = context; // It's easier to recalculate lineStart here rather than tracking down the
     // last context from which to read it -- eemeli/yaml#2
 
-    let lineStart = _Node.default.startOfLine(src, start);
+    let lineStart = _Node.Node.startOfLine(src, start);
 
     const firstItem = this.items[0]; // First-item context needs to be correct for later comment handling
     // -- eemeli/yaml#17
 
     firstItem.context.parent = this;
-    this.valueRange = _Range.default.copy(firstItem.valueRange);
+    this.valueRange = _Range.Range.copy(firstItem.valueRange);
     const indent = firstItem.range.start - firstItem.context.lineStart;
     let offset = start;
-    offset = _Node.default.normalizeOffset(src, offset);
+    offset = _Node.Node.normalizeOffset(src, offset);
     let ch = src[offset];
-    let atLineStart = _Node.default.endOfWhiteSpace(src, lineStart) === offset;
+    let atLineStart = _Node.Node.endOfWhiteSpace(src, lineStart) === offset;
     let prevIncludesTrailingLines = false;
 
     while (ch) {
       while (ch === '\n' || ch === '#') {
         if (atLineStart && ch === '\n' && !prevIncludesTrailingLines) {
-          const blankLine = new _BlankLine.default();
+          const blankLine = new _BlankLine.BlankLine();
           offset = blankLine.parse({
             src
           }, offset);
@@ -11901,7 +11820,7 @@ class Collection extends _Node.default {
             return offset;
           }
 
-          const comment = new _Comment.default();
+          const comment = new _Comment.Comment();
           offset = comment.parse({
             indent,
             lineStart,
@@ -11917,10 +11836,10 @@ class Collection extends _Node.default {
         }
 
         lineStart = offset + 1;
-        offset = _Node.default.endOfIndent(src, lineStart);
+        offset = _Node.Node.endOfIndent(src, lineStart);
 
-        if (_Node.default.atBlank(src, offset)) {
-          const wsEnd = _Node.default.endOfWhiteSpace(src, offset);
+        if (_Node.Node.atBlank(src, offset)) {
+          const wsEnd = _Node.Node.endOfWhiteSpace(src, offset);
 
           const next = src[wsEnd];
 
@@ -11968,7 +11887,7 @@ class Collection extends _Node.default {
 
       this.items.push(node);
       this.valueRange.end = node.valueRange.end;
-      offset = _Node.default.normalizeOffset(src, node.range.end);
+      offset = _Node.Node.normalizeOffset(src, node.range.end);
       ch = src[offset];
       atLineStart = false;
       prevIncludesTrailingLines = node.includesTrailingLines; // Need to reset lineStart and atLineStart here if preceding node's range
@@ -12024,12 +11943,12 @@ class Collection extends _Node.default {
       str += String(item);
     }
 
-    return _Node.default.addStringTerminator(src, range.end, str);
+    return _Node.Node.addStringTerminator(src, range.end, str);
   }
 
 }
 
-exports.default = Collection;
+exports.Collection = Collection;
 
 /***/ }),
 
@@ -12038,6 +11957,25 @@ exports.default = Collection;
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12074,14 +12012,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.runAction = exports.setInputs = void 0;
 var exec = __importStar(__webpack_require__(986));
 var core = __importStar(__webpack_require__(470));
 var yaml_1 = __webpack_require__(521);
@@ -12179,66 +12111,61 @@ exports.runAction = runAction;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.ParseContext = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _errors = __webpack_require__(405);
 
-var _Alias = _interopRequireDefault(__webpack_require__(856));
+var _Alias = __webpack_require__(856);
 
-var _BlockValue = _interopRequireDefault(__webpack_require__(24));
+var _BlockValue = __webpack_require__(24);
 
-var _Collection = _interopRequireDefault(__webpack_require__(954));
+var _Collection = __webpack_require__(954);
 
-var _CollectionItem = _interopRequireDefault(__webpack_require__(906));
+var _CollectionItem = __webpack_require__(906);
 
-var _FlowCollection = _interopRequireDefault(__webpack_require__(185));
+var _FlowCollection = __webpack_require__(185);
 
-var _Node = _interopRequireDefault(__webpack_require__(974));
+var _Node = __webpack_require__(974);
 
-var _PlainValue = _interopRequireDefault(__webpack_require__(119));
+var _PlainValue = __webpack_require__(119);
 
-var _QuoteDouble = _interopRequireDefault(__webpack_require__(725));
+var _QuoteDouble = __webpack_require__(725);
 
-var _QuoteSingle = _interopRequireDefault(__webpack_require__(411));
+var _QuoteSingle = __webpack_require__(411);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Range = __webpack_require__(19);
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function createNewNode(type, props) {
   switch (type) {
     case _constants.Type.ALIAS:
-      return new _Alias.default(type, props);
+      return new _Alias.Alias(type, props);
 
     case _constants.Type.BLOCK_FOLDED:
     case _constants.Type.BLOCK_LITERAL:
-      return new _BlockValue.default(type, props);
+      return new _BlockValue.BlockValue(type, props);
 
     case _constants.Type.FLOW_MAP:
     case _constants.Type.FLOW_SEQ:
-      return new _FlowCollection.default(type, props);
+      return new _FlowCollection.FlowCollection(type, props);
 
     case _constants.Type.MAP_KEY:
     case _constants.Type.MAP_VALUE:
     case _constants.Type.SEQ_ITEM:
-      return new _CollectionItem.default(type, props);
+      return new _CollectionItem.CollectionItem(type, props);
 
     case _constants.Type.COMMENT:
     case _constants.Type.PLAIN:
-      return new _PlainValue.default(type, props);
+      return new _PlainValue.PlainValue(type, props);
 
     case _constants.Type.QUOTE_DOUBLE:
-      return new _QuoteDouble.default(type, props);
+      return new _QuoteDouble.QuoteDouble(type, props);
 
     case _constants.Type.QUOTE_SINGLE:
-      return new _QuoteSingle.default(type, props);
+      return new _QuoteSingle.QuoteSingle(type, props);
 
     /* istanbul ignore next */
 
@@ -12277,13 +12204,13 @@ class ParseContext {
         return _constants.Type.FLOW_SEQ;
 
       case '?':
-        return !inFlow && _Node.default.atBlank(src, offset + 1, true) ? _constants.Type.MAP_KEY : _constants.Type.PLAIN;
+        return !inFlow && _Node.Node.atBlank(src, offset + 1, true) ? _constants.Type.MAP_KEY : _constants.Type.PLAIN;
 
       case ':':
-        return !inFlow && _Node.default.atBlank(src, offset + 1, true) ? _constants.Type.MAP_VALUE : _constants.Type.PLAIN;
+        return !inFlow && _Node.Node.atBlank(src, offset + 1, true) ? _constants.Type.MAP_VALUE : _constants.Type.PLAIN;
 
       case '-':
-        return !inFlow && _Node.default.atBlank(src, offset + 1, true) ? _constants.Type.SEQ_ITEM : _constants.Type.PLAIN;
+        return !inFlow && _Node.Node.atBlank(src, offset + 1, true) ? _constants.Type.SEQ_ITEM : _constants.Type.PLAIN;
 
       case '"':
         return _constants.Type.QUOTE_DOUBLE;
@@ -12305,7 +12232,7 @@ class ParseContext {
     parent
   } = {}) {
     _defineProperty(this, "parseNode", (overlay, start) => {
-      if (_Node.default.atDocumentBoundary(this.src, start)) return null;
+      if (_Node.Node.atDocumentBoundary(this.src, start)) return null;
       const context = new ParseContext(this, overlay);
       const {
         props,
@@ -12314,7 +12241,7 @@ class ParseContext {
       } = context.parseProps(start);
       const node = createNewNode(type, props);
       let offset = node.parse(context, valueStart);
-      node.range = new _Range.default(start, offset);
+      node.range = new _Range.Range(start, offset);
       /* istanbul ignore if */
 
       if (offset <= start) {
@@ -12331,9 +12258,9 @@ class ParseContext {
           node.error = new _errors.YAMLSyntaxError(node, 'Block collection must not have preceding content here (e.g. directives-end indicator)');
         }
 
-        const collection = new _Collection.default(node);
+        const collection = new _Collection.Collection(node);
         offset = collection.parse(new ParseContext(context), offset);
-        collection.range = new _Range.default(start, offset);
+        collection.range = new _Range.Range(start, offset);
         return collection;
       }
 
@@ -12357,11 +12284,11 @@ class ParseContext {
       src
     } = this;
     if (inCollection || inFlow) return false;
-    if (node instanceof _CollectionItem.default) return true; // check for implicit key
+    if (node instanceof _CollectionItem.CollectionItem) return true; // check for implicit key
 
     let offset = node.range.end;
     if (src[offset] === '\n' || src[offset - 1] === '\n') return false;
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     return src[offset] === ':';
   } // Anchor and tag are before type, which determines the node implementation
   // class; hence this intermediate step.
@@ -12375,48 +12302,48 @@ class ParseContext {
     } = this;
     const props = [];
     let lineHasProps = false;
-    offset = _Node.default.endOfWhiteSpace(src, offset);
+    offset = _Node.Node.endOfWhiteSpace(src, offset);
     let ch = src[offset];
 
     while (ch === _constants.Char.ANCHOR || ch === _constants.Char.COMMENT || ch === _constants.Char.TAG || ch === '\n') {
       if (ch === '\n') {
         const lineStart = offset + 1;
 
-        const inEnd = _Node.default.endOfIndent(src, lineStart);
+        const inEnd = _Node.Node.endOfIndent(src, lineStart);
 
         const indentDiff = inEnd - (lineStart + this.indent);
         const noIndicatorAsIndent = parent.type === _constants.Type.SEQ_ITEM && parent.context.atLineStart;
-        if (!_Node.default.nextNodeIsIndented(src[inEnd], indentDiff, !noIndicatorAsIndent)) break;
+        if (!_Node.Node.nextNodeIsIndented(src[inEnd], indentDiff, !noIndicatorAsIndent)) break;
         this.atLineStart = true;
         this.lineStart = lineStart;
         lineHasProps = false;
         offset = inEnd;
       } else if (ch === _constants.Char.COMMENT) {
-        const end = _Node.default.endOfLine(src, offset + 1);
+        const end = _Node.Node.endOfLine(src, offset + 1);
 
-        props.push(new _Range.default(offset, end));
+        props.push(new _Range.Range(offset, end));
         offset = end;
       } else {
-        let end = _Node.default.endOfIdentifier(src, offset + 1);
+        let end = _Node.Node.endOfIdentifier(src, offset + 1);
 
         if (ch === _constants.Char.TAG && src[end] === ',' && /^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+,\d\d\d\d(-\d\d){0,2}\/\S/.test(src.slice(offset + 1, end + 13))) {
           // Let's presume we're dealing with a YAML 1.0 domain tag here, rather
           // than an empty but 'foo.bar' private-tagged node in a flow collection
           // followed without whitespace by a plain string starting with a year
           // or date divided by something.
-          end = _Node.default.endOfIdentifier(src, end + 5);
+          end = _Node.Node.endOfIdentifier(src, end + 5);
         }
 
-        props.push(new _Range.default(offset, end));
+        props.push(new _Range.Range(offset, end));
         lineHasProps = true;
-        offset = _Node.default.endOfWhiteSpace(src, end);
+        offset = _Node.Node.endOfWhiteSpace(src, end);
       }
 
       ch = src[offset];
     } // '- &a : b' has an anchor on an empty node
 
 
-    if (lineHasProps && ch === ':' && _Node.default.atBlank(src, offset + 1, true)) offset -= 1;
+    if (lineHasProps && ch === ':' && _Node.Node.atBlank(src, offset + 1, true)) offset -= 1;
     const type = ParseContext.parseType(src, offset, inFlow);
     return {
       props,
@@ -12434,7 +12361,7 @@ class ParseContext {
 
 }
 
-exports.default = ParseContext;
+exports.ParseContext = ParseContext;
 
 /***/ }),
 
@@ -12493,18 +12420,13 @@ function onceStrict (fn) {
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.Node = void 0;
 
 var _constants = __webpack_require__(49);
 
 var _sourceUtils = __webpack_require__(41);
 
-var _Range = _interopRequireDefault(__webpack_require__(19));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Range = __webpack_require__(19);
 
 /** Root class of all nodes */
 class Node {
@@ -12816,7 +12738,7 @@ class Node {
 
     if (src[start] === _constants.Char.COMMENT) {
       const end = Node.endOfLine(src, start + 1);
-      const commentRange = new _Range.default(start, end);
+      const commentRange = new _Range.Range(start, end);
       this.props.push(commentRange);
       return end;
     }
@@ -12855,7 +12777,7 @@ class Node {
 
 }
 
-exports.default = Node;
+exports.Node = Node;
 
 /***/ }),
 
@@ -12873,8 +12795,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const tr = __webpack_require__(9);
+const tr = __importStar(__webpack_require__(9));
 /**
  * Exec a command.
  * Output will be streamed to the live console.
@@ -12909,10 +12838,7 @@ exports.exec = exec;
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
+exports.binary = void 0;
 
 var _constants = __webpack_require__(49);
 
@@ -12925,7 +12851,7 @@ var _string = __webpack_require__(591);
 var _options = __webpack_require__(422);
 
 /* global atob, btoa, Buffer */
-var _default = {
+const binary = {
   identify: value => value instanceof Uint8Array,
   // Buffer inherits from Uint8Array
   default: false,
@@ -13003,7 +12929,7 @@ var _default = {
     }, ctx, onComment, onChompKeep);
   }
 };
-exports.default = _default;
+exports.binary = binary;
 
 /***/ })
 
