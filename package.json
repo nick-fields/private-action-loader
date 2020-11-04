@@ -54,7 +54,7 @@
     "mkdirp": "1.0.4",
     "prettier": "2.1.2",
     "semantic-release": "17.2.2",
-    "standard": "^15.0.0",
+    "standard": "^16.0.1",
     "ts-jest": "25.5.1",
     "typescript": "^3.9.7",
     "yaml-lint": "^1.2.4"
