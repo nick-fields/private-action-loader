@@ -26,6 +26,10 @@ This action loads and executes a private Action. This allows private actions to 
 
 **Optional** Directory containing the `action.yml` that you would like to execute in repo. If omitted, the root directory is assumed to be the location of `action.yml`.
 
+### **`pal-partial-checkout`**
+
+**Optional** Experimental: only clones the root files and `actionDirectory`, useful for monorepos.
+
 ---
 
 ## **Examples**
@@ -97,6 +101,19 @@ This action loads and executes a private Action. This allows private actions to 
     pal-repo-name: some-org/super-secret-action@v1
 - name: Get the previous output
   run: echo "The previous output was ${{ steps.output_example.outputs.<name of output> }}"
+```
+
+## Example usage for Large Monorepos (experimental)
+
+Limits the clone to root files and the `/action-directory/`
+
+```yaml
+- uses: invisionapp/private-action-loader@v3
+  with:
+    pal-repo-token: ${{ secrets.REPO_TOKEN }}
+    pal-repo-name: some-org/super-secret-action
+    pal-action-directory: src/super-secret-nested-action
+    pal-partial-checkout: true
 ```
 
 ---

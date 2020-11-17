@@ -19,7 +19,13 @@ module.exports =
 /******/ 		};
 /******/
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		var threw = true;
+/******/ 		try {
+/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			threw = false;
+/******/ 		} finally {
+/******/ 			if(threw) delete installedModules[moduleId];
+/******/ 		}
 /******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
@@ -2791,6 +2797,32 @@ exports.parse = parse;
 
 /***/ }),
 
+/***/ 82:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
@@ -3725,6 +3757,42 @@ function regExpEscape (s) {
   return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 }
 
+
+/***/ }),
+
+/***/ 102:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
 
 /***/ }),
 
@@ -7761,7 +7829,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -7771,12 +7839,14 @@ var action_1 = __webpack_require__(960);
 var token = core.getInput('pal-repo-token', { required: true });
 var repoName = core.getInput('pal-repo-name', { required: true });
 var actionDirectory = core.getInput('pal-action-directory', { required: false });
+var partialCheckout = core.getInput('pal-partial-checkout', { required: false });
 var workDirectory = './.private-action';
 action_1.runAction({
     token: token,
     repoName: repoName,
     actionDirectory: actionDirectory,
     workDirectory: workDirectory,
+    partialCheckout: partialCheckout
 })
     .then(function () {
     core.info('Action completed successfully');
@@ -8606,6 +8676,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
 /**
  * Commands
  *
@@ -8660,13 +8731,13 @@ class Command {
     }
 }
 function escapeData(s) {
-    return (s || '')
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return (s || '')
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -8700,6 +8771,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(431);
+const file_command_1 = __webpack_require__(102);
+const utils_1 = __webpack_require__(82);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 /**
@@ -8722,11 +8795,21 @@ var ExitCode;
 /**
  * Sets env variable for this action and future actions in the job
  * @param name the name of the variable to set
- * @param val the value of the variable
+ * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    process.env[name] = val;
-    command_1.issueCommand('set-env', { name }, val);
+    const convertedVal = utils_1.toCommandValue(val);
+    process.env[name] = convertedVal;
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -8742,7 +8825,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -8765,12 +8854,22 @@ exports.getInput = getInput;
  * Sets the value of an output.
  *
  * @param     name     name of the output to set
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
     command_1.issueCommand('set-output', { name }, value);
 }
 exports.setOutput = setOutput;
+/**
+ * Enables or disables the echoing of commands into stdout for the rest of the step.
+ * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
+ *
+ */
+function setCommandEcho(enabled) {
+    command_1.issue('echo', enabled ? 'on' : 'off');
+}
+exports.setCommandEcho = setCommandEcho;
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -8804,18 +8903,18 @@ function debug(message) {
 exports.debug = debug;
 /**
  * Adds an error issue
- * @param message error issue message
+ * @param message error issue message. Errors will be converted to string via toString()
  */
 function error(message) {
-    command_1.issue('error', message);
+    command_1.issue('error', message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
  * Adds an warning issue
- * @param message warning issue message
+ * @param message warning issue message. Errors will be converted to string via toString()
  */
 function warning(message) {
-    command_1.issue('warning', message);
+    command_1.issue('warning', message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
 /**
@@ -8873,8 +8972,9 @@ exports.group = group;
  * Saves state for current action, the state can only be retrieved by this action's post job execution.
  *
  * @param     name     name of the state to store
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
     command_1.issueCommand('save-state', { name }, value);
 }
@@ -11882,7 +11982,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -11966,26 +12066,40 @@ function runAction(opts) {
                     core.setSecret(opts.token);
                     core.startGroup('Cloning private action');
                     repoUrl = "https://" + opts.token + "@github.com/" + repo + ".git";
+                    if (!['true', 'TRUE', 1].includes(opts.partialCheckout)) return [3 /*break*/, 2];
+                    if (!opts.actionDirectory) {
+                        throw new Error('Experimental partial-checkout feature requires action-directory.');
+                    }
+                    return [4 /*yield*/, partialCheckout({
+                            repoUrl: repoUrl,
+                            sha: sha,
+                            workDirectory: opts.workDirectory,
+                            actionDirectory: opts.actionDirectory,
+                        })];
+                case 1:
+                    _b.sent();
+                    return [3 /*break*/, 5];
+                case 2:
                     cmd = ['git clone', repoUrl, opts.workDirectory].join(' ');
                     core.info("Cleaning workDirectory");
                     rimraf_1.sync(opts.workDirectory);
                     core.info("Cloning action from https://***TOKEN***@github.com/" + repo + ".git" + (sha ? " (SHA: " + sha + ")" : ''));
                     return [4 /*yield*/, exec.exec(cmd)];
-                case 1:
+                case 3:
                     _b.sent();
+                    if (!sha) return [3 /*break*/, 5];
+                    core.info("Checking out " + sha);
+                    return [4 /*yield*/, exec.exec("git checkout " + sha, undefined, { cwd: opts.workDirectory })];
+                case 4:
+                    _b.sent();
+                    _b.label = 5;
+                case 5:
                     core.info('Remove github token from config');
                     return [4 /*yield*/, exec.exec("git remote set-url origin https://github.com/" + repo + ".git", undefined, {
                             cwd: opts.workDirectory,
                         })];
-                case 2:
+                case 6:
                     _b.sent();
-                    if (!sha) return [3 /*break*/, 4];
-                    core.info("Checking out " + sha);
-                    return [4 /*yield*/, exec.exec("git checkout " + sha, undefined, { cwd: opts.workDirectory })];
-                case 3:
-                    _b.sent();
-                    _b.label = 4;
-                case 4:
                     actionPath = opts.actionDirectory
                         ? path_1.join(opts.workDirectory, opts.actionDirectory)
                         : opts.workDirectory;
@@ -12001,7 +12115,7 @@ function runAction(opts) {
                     core.endGroup();
                     core.info("Starting private action " + action.name);
                     return [4 /*yield*/, exec.exec("node " + path_1.join(actionPath, action.runs.main))];
-                case 5:
+                case 7:
                     _b.sent();
                     core.info("Cleaning up action");
                     rimraf_1.sync(opts.workDirectory);
@@ -12011,6 +12125,56 @@ function runAction(opts) {
     });
 }
 exports.runAction = runAction;
+/**
+ * Experimental feature to reduce network waste and
+ * time-to-action. Makes use of `git sparse-checkout`
+ * to _partially_ clone the repository, specifically,
+ * it only pulls the root, and actionDirectory files.
+ */
+function partialCheckout(_a) {
+    var repoUrl = _a.repoUrl, sha = _a.sha, workDirectory = _a.workDirectory, actionDirectory = _a.actionDirectory;
+    return __awaiter(this, void 0, void 0, function () {
+        var cmd;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    core.info('Use experimental sparse-checkout feature');
+                    cmd = ['git clone', '--filter=blob:none', '--no-checkout', repoUrl, workDirectory].join(' ');
+                    core.info("Cleaning workDirectory");
+                    rimraf_1.sync(workDirectory);
+                    core.info("Partial cloning repository...");
+                    return [4 /*yield*/, exec.exec(cmd)];
+                case 1:
+                    _b.sent();
+                    // this command will run `config core.sparsecheckout true` under the bonnet
+                    // ensuring the root files will be pull later (--cone)
+                    core.info("Enabling sparse-checkout");
+                    return [4 /*yield*/, exec.exec("git sparse-checkout init --cone", undefined, { cwd: workDirectory })];
+                case 2:
+                    _b.sent();
+                    if (!sha) return [3 /*break*/, 4];
+                    core.info("Checking out " + sha);
+                    return [4 /*yield*/, exec.exec("git checkout " + sha, undefined, { cwd: workDirectory })];
+                case 3:
+                    _b.sent();
+                    return [3 /*break*/, 6];
+                case 4: 
+                // force git to re-evaluate tree after sparse-checkout init
+                return [4 /*yield*/, exec.exec("git read-tree -mu HEAD", undefined, { cwd: workDirectory })];
+                case 5:
+                    // force git to re-evaluate tree after sparse-checkout init
+                    _b.sent();
+                    _b.label = 6;
+                case 6:
+                    core.info("Pulling actionDirectory " + actionDirectory);
+                    return [4 /*yield*/, exec.exec("git sparse-checkout set " + actionDirectory, undefined, { cwd: workDirectory })];
+                case 7:
+                    _b.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 
 
 /***/ }),

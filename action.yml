@@ -10,6 +10,9 @@ inputs:
   pal-action-directory:
     description: 'The optional path to directory containing action.  Useful when multiple private actions are stored in the same repo'
     required: false
+  pal-partial-checkout:
+    description: 'Experimental: only clones the root files and actionDirectory, useful for monorepos.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
