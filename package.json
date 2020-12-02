@@ -33,7 +33,7 @@
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@semantic-release/commit-analyzer": "^8.0.1",
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^26.0.16",
     "@types/node": "14.14.9",
     "@types/rimraf": "^3.0.0",
     "@types/yaml": "^1.9.7",
