@@ -3,9 +3,7 @@ updates:
 - package-ecosystem: npm
   directory: "/"
   schedule:
-    interval: daily
-    time: "00:00"
-    timezone: America/Los_Angeles
+    interval: monthly
   target-branch: master
   reviewers:
   - nick-invision
