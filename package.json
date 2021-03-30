@@ -30,8 +30,13 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
+  <<<<<<< dependabot/npm_and_yarn/master/commitlint/config-conventional-12.0.1
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^12.0.1",
+  =======
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^11.0.0",
+  >>>>>>> master
     "@semantic-release/commit-analyzer": "^8.0.1",
     "@types/jest": "^26.0.20",
     "@types/node": "14.14.33",
@@ -53,7 +58,11 @@
     "minimist": ">=0.2.1",
     "mkdirp": "1.0.4",
     "prettier": "2.2.1",
+  <<<<<<< dependabot/npm_and_yarn/master/commitlint/config-conventional-12.0.1
+    "semantic-release": "^17.4.0",
+  =======
     "semantic-release": "^17.4.1",
+  >>>>>>> master
     "standard": "^16.0.3",
     "ts-jest": "25.5.1",
     "typescript": "^3.9.9",
