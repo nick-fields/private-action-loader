@@ -5,8 +5,7 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![Dependency Status](https://david-dm.org/InVisionApp/private-action-loader.svg)](https://david-dm.org/InVisionApp/private-action-loader)
 [![devDependency Status](https://david-dm.org/InVisionApp/private-action-loader/dev-status.svg)](https://david-dm.org/InVisionApp/private-action-loader#info=devDependencies)
-[![Maintainability](https://api.codeclimate.com/v1/badges/42214051e003ca757d60/maintainability)](https://codeclimate.com/github/InVisionApp/private-action-loader/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/42214051e003ca757d60/test_coverage)](https://codeclimate.com/github/InVisionApp/private-action-loader/test_coverage)
+[![Code Coverage](https://codecov.io/gh/InVisionApp/private-action-loader/branch/master/graph/badge.svg?token=ouop84H9gO)](https://codecov.io/gh/InVisionApp/private-action-loader)
 
 This action loads and executes a private Action. This allows private actions to be reused in other private repositories. All inputs are passed down into the private action. All outputs of the private actions are passed back to the loader action.
 
