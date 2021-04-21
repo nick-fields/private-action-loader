@@ -1,0 +1,26 @@
+# see https://docs.codecov.io/docs/codecovyml-reference for spec
+codecov:
+  notify:
+    require_ci_to_pass: true
+comment:
+  layout: 'header, diff, tree'
+  require_changes: false
+  branches: null
+  behavior: default
+  flags: null
+  paths: null
+coverage:
+  precision: 2
+  range:
+    - 95.0
+    - 100.0
+  round: down
+  status:
+    changes: false
+    patch: true
+    project: true
+ignore:
+  - 'dist/'
+  - '**/node_modules/'
+  - '**/__tests/'
+  - '__mocks__/'

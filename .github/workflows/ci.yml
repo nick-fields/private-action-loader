@@ -1,5 +1,5 @@
 name: ci
-on: 
+on:
   push:
     branches:
       - '**'
@@ -20,19 +20,12 @@ jobs:
           node-version: '10.x'
       - name: install
         run: npm install
-      - name: Configure Code Climate
-        run: cc-test-reporter before-build
-        env:
-          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
       - name: lint
         run: npm run lint
       - name: test
         run: npm run test
-      - name: Upload Results to Code Climate
-        if: always()
-        run: cc-test-reporter after-build
-        env:
-          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+      - name: coverage
+        run: npm run coverage:report
       - name: Release
         if: github.ref == 'refs/heads/master'
         id: semantic

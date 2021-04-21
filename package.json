@@ -10,7 +10,8 @@
     "lint": "npm run lint:ts && npm run lint:yaml",
     "lint:ts": "eslint --config configs/.eslintrc.js **/*.ts --fix",
     "lint:yaml": "yamllint *.yml *.yaml --fix",
-    "serve:coverage": "npx http-server ./coverage/lcov-report"
+    "coverage:report": "codecov",
+    "coverage:serve": "npx http-server ./coverage/lcov-report"
   },
   "repository": {
     "type": "git",
@@ -40,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
     "@zeit/ncc": "^0.22.3",
+    "codecov": "^3.8.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-config-standard": "^14.1.1",
