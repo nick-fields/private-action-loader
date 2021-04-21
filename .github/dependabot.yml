@@ -7,3 +7,5 @@ updates:
   target-branch: master
   reviewers:
   - nick-invision
+  allow:
+  - dependency-type: 'production'
