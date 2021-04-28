@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/invisionapp/private-action-loader.git"
+    "url": "git+https://github.com/nick-invision/private-action-loader.git"
   },
   "author": {
-    "name": "InVision, Inc."
+    "name": "Nick Fields"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/invisionapp/private-action-loader/issues"
+    "url": "https://github.com/nick-invision/private-action-loader/issues"
   },
   "dependencies": {
     "@actions/core": "^1.2.6",

@@ -1,13 +1,15 @@
 # Private Action Loader
 
-[![Actions Status](https://github.com/invisionapp/private-action-loader/workflows/ci/badge.svg?branch=develop)](https://github.com/invisionapp/private-action-loader/actions)
+[![Actions Status](https://github.com/nick-invision/private-action-loader/workflows/ci/badge.svg?branch=develop)](https://github.com/nick-invision/private-action-loader/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![Dependency Status](https://david-dm.org/InVisionApp/private-action-loader.svg)](https://david-dm.org/InVisionApp/private-action-loader)
-[![devDependency Status](https://david-dm.org/InVisionApp/private-action-loader/dev-status.svg)](https://david-dm.org/InVisionApp/private-action-loader#info=devDependencies)
-[![Code Coverage](https://codecov.io/gh/InVisionApp/private-action-loader/branch/master/graph/badge.svg?token=ouop84H9gO)](https://codecov.io/gh/InVisionApp/private-action-loader)
+[![Dependency Status](https://david-dm.org/nick-invision/private-action-loader.svg)](https://david-dm.org/nick-invision/private-action-loader)
+[![devDependency Status](https://david-dm.org/nick-invision/private-action-loader/dev-status.svg)](https://david-dm.org/nick-invision/private-action-loader#info=devDependencies)
+[![Code Coverage](https://codecov.io/gh/nick-invision/private-action-loader/branch/master/graph/badge.svg?token=ouop84H9gO)](https://codecov.io/gh/nick-invision/private-action-loader)
 
 This action loads and executes a private Action. This allows private actions to be reused in other private repositories. All inputs are passed down into the private action. All outputs of the private actions are passed back to the loader action.
+
+**NOTE:** Ownership of this project was transferred from `invisionapp` to `nick-invision`.  Details [here](#Ownership)
 
 ---
 
@@ -32,7 +34,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ pal-action-directory
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -42,7 +44,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ additional parameters
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -53,7 +55,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/o additional parameters
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -62,7 +64,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ SHA
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@b8a83a0
@@ -71,7 +73,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Branch
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@master
@@ -80,7 +82,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Tag
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@v1
@@ -89,7 +91,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Output
 
 ```yaml
-- uses: invisionapp/private-action-loader@v3
+- uses: nick-invision/private-action-loader@v3
   id: output_example
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
@@ -103,4 +105,9 @@ This action loads and executes a private Action. This allows private actions to 
 ## **Limitations**
 
 - Only supports javascript actions
-- There is very little error handling so far
+
+## **Ownership**
+
+As of 2021/04/28 ownership of this project has been transferred from the InVisionApp organization to my personal nick-invision account due to changes to our organization level security settings that conflicts with public GitHub Actions.  I am the author and have been the primary maintainer since day one and will continue to maintain this as needed.  
+
+No immediate action is required if you rely on this as GitHub handles ownership transfers pretty well. Any current workflow reference to `invisionapp/private-action-loader@<whatever>` will still work, but will just pull from `nick-invision/private-action-loader@<whatever>` instead.  Who knows how long that will work, so at some point it would be beneficial to update your workflows to reflect the new owner accordingly.
