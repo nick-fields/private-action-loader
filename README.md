@@ -9,6 +9,8 @@
 
 This action loads and executes a private Action. This allows private actions to be reused in other private repositories. All inputs are passed down into the private action. All outputs of the private actions are passed back to the loader action.
 
+**NOTE:** Ownership of this project was transferred from `invisionapp` to `nick-invision`.  Details [here](#Ownership)
+
 ---
 
 ## **Inputs**
