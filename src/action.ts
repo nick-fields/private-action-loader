@@ -4,6 +4,7 @@ import { parse } from 'yaml';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { sync } from 'rimraf';
+import { findNode } from './find-node';
 
 export function setInputs(action: any): void {
   if (!action.inputs) {
@@ -84,8 +85,12 @@ export async function runAction(opts: {
   setInputs(action);
   core.endGroup();
 
+  core.startGroup('Find node executable');
+  const node = await findNode(exec);
+  core.endGroup();
+
   core.info(`Starting private action ${action.name}`);
-  await exec.exec(`node ${join(actionPath, action.runs.main)}`);
+  await exec.exec(`${node} ${join(actionPath, action.runs.main)}`);
 
   core.info(`Cleaning up action`);
   sync(opts.workDirectory);
