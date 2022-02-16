@@ -1,15 +1,15 @@
 # Private Action Loader
 
-[![Actions Status](https://github.com/nick-invision/private-action-loader/workflows/ci/badge.svg?branch=develop)](https://github.com/nick-invision/private-action-loader/actions)
+[![Actions Status](https://github.com/nick-fields/private-action-loader/workflows/ci/badge.svg?branch=develop)](https://github.com/nick-fields/private-action-loader/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-[![Dependency Status](https://david-dm.org/nick-invision/private-action-loader.svg)](https://david-dm.org/nick-invision/private-action-loader)
-[![devDependency Status](https://david-dm.org/nick-invision/private-action-loader/dev-status.svg)](https://david-dm.org/nick-invision/private-action-loader#info=devDependencies)
-[![Code Coverage](https://codecov.io/gh/nick-invision/private-action-loader/branch/master/graph/badge.svg?token=ouop84H9gO)](https://codecov.io/gh/nick-invision/private-action-loader)
+[![Dependency Status](https://david-dm.org/nick-fields/private-action-loader.svg)](https://david-dm.org/nick-fields/private-action-loader)
+[![devDependency Status](https://david-dm.org/nick-fields/private-action-loader/dev-status.svg)](https://david-dm.org/nick-fields/private-action-loader#info=devDependencies)
+[![Code Coverage](https://codecov.io/gh/nick-fields/private-action-loader/branch/master/graph/badge.svg?token=ouop84H9gO)](https://codecov.io/gh/nick-fields/private-action-loader)
 
 This action loads and executes a private Action. This allows private actions to be reused in other private repositories. All inputs are passed down into the private action. All outputs of the private actions are passed back to the loader action.
 
-**NOTE:** Ownership of this project was transferred from `invisionapp` to `nick-invision`.  Details [here](#Ownership)
+**NOTE:** Ownership of this project was transferred to my personal account `nick-fields` from `invisionapp` then `nick-invision`.  Details [here](#Ownership)
 
 ---
 
@@ -34,7 +34,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ pal-action-directory
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -44,7 +44,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ additional parameters
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -55,7 +55,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/o additional parameters
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action
@@ -64,7 +64,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ SHA
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@b8a83a0
@@ -73,7 +73,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Branch
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@master
@@ -82,7 +82,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Tag
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
     pal-repo-name: some-org/super-secret-action@v1
@@ -91,7 +91,7 @@ This action loads and executes a private Action. This allows private actions to 
 ## Example usage w/ Output
 
 ```yaml
-- uses: nick-invision/private-action-loader@v3
+- uses: nick-fields/private-action-loader@v3
   id: output_example
   with:
     pal-repo-token: ${{ secrets.REPO_TOKEN }}
@@ -108,6 +108,6 @@ This action loads and executes a private Action. This allows private actions to 
 
 ## **Ownership**
 
-As of 2021/04/28 ownership of this project has been transferred from the InVisionApp organization to my personal nick-invision account due to changes to our organization level security settings that conflicts with public GitHub Actions.  I am the author and have been the primary maintainer since day one and will continue to maintain this as needed.  
+As of 2022/02/15 ownership of this project has been transferred to my personal `nick-fields` account due to me leaving InVision. Previously on 2021/04/28 ownership of this project was transferred from the `InVisionApp` organization to my work account `nick-invision` due to changes to our organization level security settings that conflicts with public GitHub Actions.  I am the author and have been the primary maintainer since day one and will continue to maintain this as needed.  
 
-No immediate action is required if you rely on this as GitHub handles ownership transfers pretty well. Any current workflow reference to `invisionapp/private-action-loader@<whatever>` will still work, but will just pull from `nick-invision/private-action-loader@<whatever>` instead.  Who knows how long that will work, so at some point it would be beneficial to update your workflows to reflect the new owner accordingly.
+No immediate action is required if you rely on this as GitHub handles ownership transfers pretty well. Any current workflow reference to `nick-invision/private-action-loader@<whatever>` will still work, but will just pull from `nick-fields/private-action-loader@<whatever>` instead.  Who knows how long that will work, so at some point it would be beneficial to update your workflows to reflect the new owner accordingly.
