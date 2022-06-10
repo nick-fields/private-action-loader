@@ -55,7 +55,7 @@
     "minimist": ">=0.2.1",
     "mkdirp": "1.0.4",
     "prettier": "2.2.1",
-    "semantic-release": "17.4.0",
+    "semantic-release": "19.0.3",
     "standard": "^16.0.3",
     "ts-jest": "25.5.1",
     "typescript": "^3.9.9",
