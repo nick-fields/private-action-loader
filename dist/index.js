@@ -7708,7 +7708,11 @@ function wrappy (fn, cb) {
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -7721,7 +7725,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -7740,7 +7744,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -7774,22 +7778,22 @@ function setInputs(action) {
         core.info('No inputs defined in action.');
         return;
     }
-    core.info("The configured inputs are " + Object.keys(action.inputs));
+    core.info("The configured inputs are ".concat(Object.keys(action.inputs)));
     for (var _i = 0, _a = Object.keys(action.inputs); _i < _a.length; _i++) {
         var i = _a[_i];
-        var formattedInputName = "INPUT_" + i.toUpperCase();
+        var formattedInputName = "INPUT_".concat(i.toUpperCase());
         if (process.env[formattedInputName]) {
-            core.info("Input " + i + " already set");
+            core.info("Input ".concat(i, " already set"));
             continue;
         }
         else if (!action.inputs[i].required && !action.inputs[i].default) {
-            core.info("Input " + i + " not required and has no default");
+            core.info("Input ".concat(i, " not required and has no default"));
             continue;
         }
         else if (action.inputs[i].required && !action.inputs[i].default) {
-            core.error("Input " + i + " required but not provided and no default is set");
+            core.error("Input ".concat(i, " required but not provided and no default is set"));
         }
-        core.info("Input " + i + " not set.  Using default '" + action.inputs[i].default + "'");
+        core.info("Input ".concat(i, " not set.  Using default '").concat(action.inputs[i].default, "'"));
         process.env[formattedInputName] = action.inputs[i].default;
     }
 }
@@ -7804,33 +7808,33 @@ function runAction(opts) {
                     core.info('Masking token just in case');
                     core.setSecret(opts.token);
                     core.startGroup('Cloning private action');
-                    repoUrl = "https://" + opts.token + "@github.com/" + repo + ".git";
+                    repoUrl = "https://".concat(opts.token, "@github.com/").concat(repo, ".git");
                     cmd = ['git clone', repoUrl, opts.workDirectory].join(' ');
                     core.info("Cleaning workDirectory");
-                    rimraf_1.sync(opts.workDirectory);
-                    core.info("Cloning action from https://***TOKEN***@github.com/" + repo + ".git" + (sha ? " (SHA: " + sha + ")" : ''));
+                    (0, rimraf_1.sync)(opts.workDirectory);
+                    core.info("Cloning action from https://***TOKEN***@github.com/".concat(repo, ".git").concat(sha ? " (SHA: ".concat(sha, ")") : ''));
                     return [4 /*yield*/, exec.exec(cmd)];
                 case 1:
                     _b.sent();
                     core.info('Remove github token from config');
-                    return [4 /*yield*/, exec.exec("git remote set-url origin https://github.com/" + repo + ".git", undefined, {
+                    return [4 /*yield*/, exec.exec("git remote set-url origin https://github.com/".concat(repo, ".git"), undefined, {
                             cwd: opts.workDirectory,
                         })];
                 case 2:
                     _b.sent();
                     if (!sha) return [3 /*break*/, 4];
-                    core.info("Checking out " + sha);
-                    return [4 /*yield*/, exec.exec("git checkout " + sha, undefined, { cwd: opts.workDirectory })];
+                    core.info("Checking out ".concat(sha));
+                    return [4 /*yield*/, exec.exec("git checkout ".concat(sha), undefined, { cwd: opts.workDirectory })];
                 case 3:
                     _b.sent();
                     _b.label = 4;
                 case 4:
                     actionPath = opts.actionDirectory
-                        ? path_1.join(opts.workDirectory, opts.actionDirectory)
+                        ? (0, path_1.join)(opts.workDirectory, opts.actionDirectory)
                         : opts.workDirectory;
-                    core.info("Reading " + actionPath);
-                    actionFile = fs_1.readFileSync(actionPath + "/action.yml", 'utf8');
-                    action = yaml_1.parse(actionFile);
+                    core.info("Reading ".concat(actionPath));
+                    actionFile = (0, fs_1.readFileSync)("".concat(actionPath, "/action.yml"), 'utf8');
+                    action = (0, yaml_1.parse)(actionFile);
                     if (!(action && action.name && action.runs && action.runs.main)) {
                         throw new Error('Malformed action.yml found');
                     }
@@ -7838,12 +7842,12 @@ function runAction(opts) {
                     core.startGroup('Input Validation');
                     setInputs(action);
                     core.endGroup();
-                    core.info("Starting private action " + action.name);
-                    return [4 /*yield*/, exec.exec("node " + path_1.join(actionPath, action.runs.main))];
+                    core.info("Starting private action ".concat(action.name));
+                    return [4 /*yield*/, exec.exec("node ".concat((0, path_1.join)(actionPath, action.runs.main)))];
                 case 5:
                     _b.sent();
                     core.info("Cleaning up action");
-                    rimraf_1.sync(opts.workDirectory);
+                    (0, rimraf_1.sync)(opts.workDirectory);
                     return [2 /*return*/];
             }
         });
@@ -7861,7 +7865,11 @@ exports.runAction = runAction;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -7874,7 +7882,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -7885,7 +7893,7 @@ var token = core.getInput('pal-repo-token', { required: true });
 var repoName = core.getInput('pal-repo-name', { required: true });
 var actionDirectory = core.getInput('pal-action-directory', { required: false });
 var workDirectory = './.private-action';
-action_1.runAction({
+(0, action_1.runAction)({
     token: token,
     repoName: repoName,
     actionDirectory: actionDirectory,
