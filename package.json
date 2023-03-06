@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "npx rimraf node_modules dist",
     "test": "jest --coverage",
-    "prepare": "ncc build src/index.ts",
+    "prepare": "export NODE_OPTIONS=--openssl-legacy-provider && ncc build src/index.ts",
     "lint": "npm run lint:ts && npm run lint:yaml",
     "lint:ts": "eslint --config configs/.eslintrc.js **/*.ts --fix",
     "lint:yaml": "yamllint *.yml *.yaml --fix",
@@ -35,7 +35,7 @@
     "@commitlint/config-conventional": "^12.0.1",
     "@semantic-release/commit-analyzer": "^8.0.1",
     "@types/jest": "^26.0.20",
-    "@types/node": "14.14.31",
+    "@types/node": "16.11.7",
     "@types/rimraf": "^3.0.0",
     "@types/yaml": "^1.9.7",
     "@typescript-eslint/eslint-plugin": "2.34.0",

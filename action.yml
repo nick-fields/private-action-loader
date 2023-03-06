@@ -11,7 +11,7 @@ inputs:
     description: 'The optional path to directory containing action.  Useful when multiple private actions are stored in the same repo'
     required: false
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'lock'
