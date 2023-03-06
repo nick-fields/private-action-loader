@@ -9,15 +9,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
       - name: Install Pre-requisites
         run: .github/scripts/ubuntu-init.sh
       - name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: '10.x'
+          node-version: '16.x'
       - name: install
         run: npm install
       - name: lint
